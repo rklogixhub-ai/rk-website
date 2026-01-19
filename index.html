@@ -1,448 +1,804 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RK LOGIX HUB - Connecting Drivers & Dispatchers</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hero-bg {
-            background: linear-gradient(135deg, #000000 0%, #1f1f1f 100%);
-        }
-        .section-fade {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease-in-out;
-        }
-        .section-fade.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .truck-icon {
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RK LOGIX HUB - Client CRM</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    .card { border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+    .btn { border-radius: 12px; padding: 10px 14px; font-weight: 600; }
+    .btn-primary { background: #111827; color: white; }
+    .btn-outline { border: 1px solid #111827; color: #111827; background: white; }
+    .input { width: 100%; border: 1px solid #d1d5db; border-radius: 12px; padding: 10px 12px; }
+    .label { font-size: 12px; font-weight: 700; color: #374151; }
+    .muted { color: #6b7280; }
+    .pill { border: 1px solid #e5e7eb; padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+    .hidden { display: none; }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-black shadow-lg fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-bold text-white">RK LOGIX HUB</h1>
-                    </div>
-                </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a>
-                        <a href="#dispatcher" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DISPATCHER</a>
-                        <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a>
-                        <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a>
-                        <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a>
-                        <button onclick="showLogin()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">LOGIN</button>
-                        <button onclick="showRegister()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button>
-                    </div>
-                </div>
-                <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button onclick="toggleMobileMenu()" class="text-white hover:text-gray-300 focus:outline-none">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
-            <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a>
-                <a href="#dispatcher" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DISPATCHER</a>
-                <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a>
-                <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a>
-                <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a>
-                <button onclick="showLogin()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">LOGIN</button>
-                <button onclick="showRegister()" class="w-full text-left bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-md text-base font-medium">REGISTER</button>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Home Section -->
-    <section id="home" class="hero-bg text-white pt-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div class="text-center">
-                <div class="truck-icon mb-8">
-                    <svg class="w-20 h-20 mx-auto text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                    </svg>
-                </div>
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">RK LOGIX HUB</h1>
-                <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Connecting Drivers and Dispatchers Through Smart Technology</p>
-                <p class="text-lg mb-10 max-w-2xl mx-auto">Your trusted platform for seamless trucking operations, efficient load management, and reliable transportation solutions.</p>
-                <div class="space-x-4">
-                    <button onclick="showRegister()" class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">Get Started</button>
-                    <a href="#about" class="border-2 border-white text-white hover:bg-white hover:text-black px-8 py-3 rounded-lg text-lg font-semibold transition-colors inline-block">Learn More</a>
-                </div>
-            </div>
-        </div>
-    </section>
+<body class="bg-gray-50 text-gray-900">
+  <header class="px-5 py-4 bg-white border-b">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      <div>
+        <div class="text-xl font-extrabold">RK LOGIX HUB</div>
+        <div class="text-sm muted">Client Registration • Follow-ups • Load Assignment • BOL Storage</div>
+      </div>
 
-    <!-- Dispatcher Section -->
-    <section id="dispatcher" class="py-20 bg-white section-fade">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">For Dispatchers</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Streamline your operations with our comprehensive dispatch management system</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center p-6 bg-gray-100 rounded-lg">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Load Management</h3>
-                    <p class="text-gray-600">Efficiently manage and assign loads to available drivers with real-time tracking</p>
-                </div>
-                <div class="text-center p-6 bg-gray-100 rounded-lg">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Driver Network</h3>
-                    <p class="text-gray-600">Access to a verified network of professional drivers ready for your loads</p>
-                </div>
-                <div class="text-center p-6 bg-gray-100 rounded-lg">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Analytics & Reports</h3>
-                    <p class="text-gray-600">Comprehensive reporting and analytics to optimize your dispatch operations</p>
-                </div>
-            </div>
-        </div>
-    </section>
+      <div class="flex items-center gap-2">
+        <span id="sessionPill" class="pill hidden"></span>
+        <button id="btnLogin" class="btn btn-primary">Employee Login</button>
+        <button id="btnLogout" class="btn btn-outline hidden">Logout</button>
+      </div>
+    </div>
+  </header>
 
-    <!-- Driver Section -->
-    <section id="driver" class="py-20 bg-gray-100 section-fade">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">For Drivers</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Find the best loads and grow your trucking business with our driver-focused platform</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2 text-black">Find Loads</h3>
-                    <p class="text-gray-600">Browse and select from thousands of available loads that match your route</p>
-                </div>
-                <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2 text-black">Quick Payments</h3>
-                    <p class="text-gray-600">Fast and secure payment processing to keep your cash flow steady</p>
-                </div>
-                <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
-                    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2 text-black">24/7 Support</h3>
-                    <p class="text-gray-600">Round-the-clock support to help you with any issues on the road</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <main class="max-w-6xl mx-auto px-5 py-6 space-y-6">
 
-    <!-- About Section -->
-    <section id="about" class="py-20 bg-white section-fade">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-4xl font-bold text-gray-900 mb-6">About Us</h2>
-                    <p class="text-lg text-gray-600 mb-6">
-                        RK Logix Hub was founded in 2024 by an engineer with a strong understanding of supply chain and logistics. The founder assembled a skilled team and provided specialised training in mid-mile and last-mile logistics to deliver efficient, reliable, and technology-driven delivery solutions.
-                    </p>
-                    <p class="text-lg text-gray-600 mb-6">
-                        Our company leverages artificial intelligence in daily operations to optimise transportation processes, streamline decision-making, and enhance operational efficiency. We are now expanding into dispatching and safety management for owner-operators, integrating AI-driven tools to improve route planning, compliance monitoring, and safety performance.
-                    </p>
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Mission Statement</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            To revolutionise logistics and dispatch management by combining deep industry expertise with cutting-edge AI, ensuring speed, accuracy, and safety in every delivery.
-                        </p>
-                    </div>
-                    <div class="mb-6">
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">Vision Statement</h3>
-                        <p class="text-lg text-gray-600 mb-6">
-                            To become a leading global logistics partner, setting new standards for operational efficiency, safety, and technology integration in the transportation industry.
-                        </p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center p-4 bg-gray-100 rounded-lg">
-                            <div class="text-2xl font-bold text-black">500+</div>
-                            <div class="text-gray-600">Active Drivers</div>
-                        </div>
-                        <div class="text-center p-4 bg-black rounded-lg">
-                            <div class="text-2xl font-bold text-white">100+</div>
-                            <div class="text-gray-300">Dispatchers</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <svg class="w-80 h-80 mx-auto text-black" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                </div>
-            </div>
+    <!-- STATUS / ALERT -->
+    <div id="alert" class="hidden card p-4 bg-white">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div id="alertTitle" class="font-bold"></div>
+          <div id="alertMsg" class="text-sm muted mt-1"></div>
         </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 bg-gray-900 text-white section-fade">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Contact Us</h2>
-                <p class="text-xl text-gray-300">Get in touch with our team for support or inquiries</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Phone</h3>
-                    <p class="text-gray-300">+1 (437)-869-4896</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Email</h3>
-                    <p class="text-gray-300">rklogixhub@gmail.com</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Address</h3>
-                    <p class="text-gray-300">6 park vista, M4B 1A2</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">Login</h3>
-                <button onclick="closeModal('loginModal')" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <form onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                    <input type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Login as:</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                        <option value="driver">Driver</option>
-                        <option value="dispatcher">Dispatcher</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors">
-                    Login
-                </button>
-            </form>
-        </div>
+        <button class="btn btn-outline" onclick="hideAlert()">Close</button>
+      </div>
     </div>
 
-    <!-- Register Modal -->
-    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">Register</h3>
-                <button onclick="closeModal('registerModal')" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <form onsubmit="handleRegister(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
-                    <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                    <input type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Phone</label>
-                    <input type="tel" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input type="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
-                        <option value="driver">Driver</option>
-                        <option value="dispatcher">Dispatcher</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors">
-                    Register
-                </button>
-            </form>
-        </div>
+    <!-- QUICK NAV -->
+    <div class="card p-4 bg-white">
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-outline" onclick="scrollToId('registerSection')">Register Client</button>
+        <button class="btn btn-outline" onclick="scrollToId('viewClientsSection')">View Client Data</button>
+        <button class="btn btn-outline" onclick="scrollToId('contactTrackingSection')">Contact Tracking</button>
+      </div>
+      <div class="text-sm muted mt-2">
+        Note: Data operations require employee login (Supabase Auth). PDFs are stored privately in Supabase Storage.
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-black text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; 2024 RK LOGIX HUB. All rights reserved.</p>
+    <!-- REGISTER CLIENT -->
+    <section id="registerSection" class="card p-5 bg-white">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-extrabold">Register Client</h2>
+          <p class="text-sm muted mt-1">Register Shipper and Receiver into separate tables for future business and search.</p>
         </div>
-    </footer>
+        <div class="pill">Tables: shippers • receivers</div>
+      </div>
 
-    <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-                // Close mobile menu if open
-                document.getElementById('mobile-menu').classList.add('hidden');
-            });
-        });
+      <div class="mt-5 grid md:grid-cols-2 gap-4">
+        <!-- Shipper -->
+        <div class="card p-4 bg-gray-50">
+          <div class="font-extrabold">Shipper Registration</div>
+          <form id="shipperForm" class="mt-3 space-y-3">
+            <div>
+              <div class="label">Company Name</div>
+              <input class="input" name="company_name" required />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Contact Name</div>
+                <input class="input" name="contact_name" />
+              </div>
+              <div>
+                <div class="label">Phone</div>
+                <input class="input" name="phone" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Email</div>
+                <input class="input" name="email" type="email" />
+              </div>
+              <div>
+                <div class="label">Company Website</div>
+                <input class="input" name="company_website" />
+              </div>
+            </div>
 
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
-        }
+            <div class="label">Street Address</div>
+            <input class="input" name="street_address" />
 
-        // Modal functions
-        function showLogin() {
-            document.getElementById('loginModal').classList.remove('hidden');
-        }
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">City</div>
+                <input class="input" name="city" />
+              </div>
+              <div>
+                <div class="label">State/Province</div>
+                <input class="input" name="state_province" />
+              </div>
+            </div>
 
-        function showRegister() {
-            document.getElementById('registerModal').classList.remove('hidden');
-        }
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Country</div>
+                <input class="input" name="country" />
+              </div>
+              <div>
+                <div class="label">Postal Code</div>
+                <input class="input" name="postal_code" />
+              </div>
+            </div>
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
+            <div>
+              <div class="label">Load Description</div>
+              <input class="input" name="load_description" />
+            </div>
+            <div>
+              <div class="label">Preferred Trailer Type</div>
+              <input class="input" name="preferred_trailer_type" placeholder="Dry Van / Reefer / Flatbed..." />
+            </div>
 
-        // Form handlers
-        function handleLogin(event) {
-            event.preventDefault();
-            // Demo functionality - show success message
-            const modal = document.getElementById('loginModal');
-            modal.innerHTML = `
-                <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Login Successful!</h3>
-                    <p class="text-gray-600 mb-4">Welcome back to RK LOGIX HUB</p>
-                    <button onclick="closeModal('loginModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
-                        Continue
-                    </button>
-                </div>
-            `;
-        }
+            <div class="flex gap-2 pt-2">
+              <button class="btn btn-primary" type="submit">Save Shipper</button>
+              <button class="btn btn-outline" type="button" onclick="document.getElementById('shipperForm').reset()">Clear</button>
+            </div>
+          </form>
+        </div>
 
-        function handleRegister(event) {
-            event.preventDefault();
-            // Demo functionality - show success message
-            const modal = document.getElementById('registerModal');
-            modal.innerHTML = `
-                <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
-                    <p class="text-gray-600 mb-4">Welcome to RK LOGIX HUB! Please check your email for verification.</p>
-                    <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
-                        Continue
-                    </button>
-                </div>
-            `;
-        }
+        <!-- Receiver -->
+        <div class="card p-4 bg-gray-50">
+          <div class="font-extrabold">Receiver Registration</div>
+          <form id="receiverForm" class="mt-3 space-y-3">
+            <div>
+              <div class="label">Company Name</div>
+              <input class="input" name="company_name" required />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Contact Name</div>
+                <input class="input" name="contact_name" />
+              </div>
+              <div>
+                <div class="label">Phone</div>
+                <input class="input" name="phone" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Email</div>
+                <input class="input" name="email" type="email" />
+              </div>
+              <div>
+                <div class="label">Company Website</div>
+                <input class="input" name="company_website" />
+              </div>
+            </div>
 
-        // Scroll animations
-        function handleScrollAnimations() {
-            const sections = document.querySelectorAll('.section-fade');
-            sections.forEach(section => {
-                const rect = section.getBoundingClientRect();
-                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-                if (isVisible) {
-                    section.classList.add('visible');
-                }
-            });
-        }
+            <div class="label">Street Address</div>
+            <input class="input" name="street_address" />
 
-        // Initialize scroll animations
-        window.addEventListener('scroll', handleScrollAnimations);
-        window.addEventListener('load', handleScrollAnimations);
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">City</div>
+                <input class="input" name="city" />
+              </div>
+              <div>
+                <div class="label">State/Province</div>
+                <input class="input" name="state_province" />
+              </div>
+            </div>
 
-        // Close modals when clicking outside
-        document.addEventListener('click', function(event) {
-            const loginModal = document.getElementById('loginModal');
-            const registerModal = document.getElementById('registerModal');
-            
-            if (event.target === loginModal) {
-                closeModal('loginModal');
-            }
-            if (event.target === registerModal) {
-                closeModal('registerModal');
-            }
-        });
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96dd16b577ce36d5',t:'MTc1NDk3MTQ2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <div class="label">Country</div>
+                <input class="input" name="country" />
+              </div>
+              <div>
+                <div class="label">Postal Code</div>
+                <input class="input" name="postal_code" />
+              </div>
+            </div>
+
+            <div>
+              <div class="label">Load Description</div>
+              <input class="input" name="load_description" />
+            </div>
+            <div>
+              <div class="label">Preferred Trailer Type</div>
+              <input class="input" name="preferred_trailer_type" placeholder="Dry Van / Reefer / Flatbed..." />
+            </div>
+
+            <div class="flex gap-2 pt-2">
+              <button class="btn btn-primary" type="submit">Save Receiver</button>
+              <button class="btn btn-outline" type="button" onclick="document.getElementById('receiverForm').reset()">Clear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW CLIENTS -->
+    <section id="viewClientsSection" class="card p-5 bg-white">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-extrabold">View Client Data</h2>
+          <p class="text-sm muted mt-1">Loads from <b>clients_view</b> (combined shipper + receiver).</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-outline" onclick="loadClients()">Refresh Data</button>
+        </div>
+      </div>
+
+      <div class="mt-4 grid md:grid-cols-4 gap-3">
+        <div>
+          <div class="label">Client Type</div>
+          <select id="filterClientType" class="input">
+            <option value="">All</option>
+            <option value="shipper">Shipper</option>
+            <option value="receiver">Receiver</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">Country</div>
+          <input id="filterCountry" class="input" placeholder="Canada / USA" />
+        </div>
+        <div>
+          <div class="label">State/Province</div>
+          <input id="filterState" class="input" placeholder="ON / NY ..." />
+        </div>
+        <div>
+          <div class="label">Trailer Type</div>
+          <input id="filterTrailer" class="input" placeholder="Dry Van / Reefer ..." />
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left">
+            <tr class="border-b">
+              <th class="py-2 pr-4">Type</th>
+              <th class="py-2 pr-4">Company</th>
+              <th class="py-2 pr-4">Contact</th>
+              <th class="py-2 pr-4">Phone</th>
+              <th class="py-2 pr-4">Email</th>
+              <th class="py-2 pr-4">City</th>
+              <th class="py-2 pr-4">State</th>
+              <th class="py-2 pr-4">Country</th>
+              <th class="py-2 pr-4">Trailer</th>
+              <th class="py-2 pr-4">Created</th>
+            </tr>
+          </thead>
+          <tbody id="clientsTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONTACT TRACKING -->
+    <section id="contactTrackingSection" class="card p-5 bg-white">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-extrabold">Contact Tracking</h2>
+          <p class="text-sm muted mt-1">Record each follow-up. Assign a load and upload BOL PDF when applicable.</p>
+        </div>
+        <div class="pill">Tables: contact_tracking • loads • Storage: load-documents</div>
+      </div>
+
+      <div class="mt-5 grid md:grid-cols-2 gap-4">
+        <div class="card p-4 bg-gray-50">
+          <div class="font-extrabold">Record Follow-up</div>
+
+          <div class="mt-3 space-y-3">
+            <div>
+              <div class="label">Client</div>
+              <select id="clientSelect" class="input">
+                <option value="">Load clients… (click Refresh Clients)</option>
+              </select>
+              <div class="text-xs muted mt-1">Tip: Click “Refresh Data” in View Client Data first, then come here.</div>
+            </div>
+
+            <div>
+              <div class="label">Contact Methods</div>
+              <div class="flex flex-wrap gap-3 mt-2 text-sm">
+                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Email"/> Email</label>
+                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Phone Call"/> Phone Call</label>
+                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Social Media"/> Social Media</label>
+                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="WhatsApp"/> WhatsApp</label>
+              </div>
+            </div>
+
+            <div>
+              <div class="label">Remarks</div>
+              <textarea id="remarks" class="input" rows="4" placeholder="Write follow-up notes..."></textarea>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+              <button class="btn btn-primary" onclick="saveContact()">Record Contact</button>
+              <button class="btn btn-outline" onclick="openLoadAssignModal()">Load Assigned</button>
+            </div>
+
+            <div class="text-xs muted">
+              Load Assigned workflow: creates load → uploads PDF → updates load bol_pdf_path → links last contact with load_id.
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-4 bg-gray-50">
+          <div class="font-extrabold">Recent Contact History</div>
+          <div class="text-sm muted mt-1">Shows last 20 follow-ups (for quick validation).</div>
+          <div class="mt-3 space-y-2" id="contactHistory"></div>
+          <div class="mt-3">
+            <button class="btn btn-outline" onclick="loadContactHistory()">Refresh History</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white card p-5 w-full max-w-md">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="text-lg font-extrabold">Employee Login</div>
+          <div class="text-sm muted">Use Supabase Auth email/password.</div>
+        </div>
+        <button class="btn btn-outline" onclick="closeModal('loginModal')">Close</button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <div>
+          <div class="label">Email</div>
+          <input id="loginEmail" class="input" type="email" placeholder="employee@rklogixhub.com" />
+        </div>
+        <div>
+          <div class="label">Password</div>
+          <input id="loginPassword" class="input" type="password" placeholder="••••••••" />
+        </div>
+        <button class="btn btn-primary w-full" onclick="login()">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD ASSIGN MODAL -->
+  <div id="loadModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div class="bg-white card p-5 w-full max-w-xl">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="text-lg font-extrabold">Load Assignment</div>
+          <div class="text-sm muted">Enter load reference number and upload BOL PDF.</div>
+        </div>
+        <button class="btn btn-outline" onclick="closeModal('loadModal')">Close</button>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <div>
+          <div class="label">Load Reference Number (BOL)</div>
+          <input id="loadRef" class="input" placeholder="e.g., LOAD-12345" />
+        </div>
+
+        <div>
+          <div class="label">BOL PDF (Upload)</div>
+          <input id="bolFile" class="input" type="file" accept="application/pdf" />
+          <div class="text-xs muted mt-1">Only PDF allowed. Stored in bucket: load-documents (private).</div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button class="btn btn-primary" onclick="assignLoadAndUpload()">Create Load + Upload PDF</button>
+          <button class="btn btn-outline" onclick="closeModal('loadModal')">Cancel</button>
+        </div>
+
+        <div id="loadModalStatus" class="text-sm muted"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================
+    // 1) SUPABASE CONFIG
+    // ============================
+    const SUPABASE_URL = "https://gtwpndodljngyiyfpzcy.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_u-lCgvNcQ910xc_n3oVnlQ_4DVBr";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ============================
+    // 2) SMALL UI HELPERS
+    // ============================
+    function showAlert(title, msg) {
+      document.getElementById('alertTitle').textContent = title;
+      document.getElementById('alertMsg').textContent = msg;
+      document.getElementById('alert').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hideAlert() {
+      document.getElementById('alert').classList.add('hidden');
+    }
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+    function scrollToId(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function setSessionUI(user) {
+      const pill = document.getElementById('sessionPill');
+      const btnLogin = document.getElementById('btnLogin');
+      const btnLogout = document.getElementById('btnLogout');
+
+      if (user) {
+        pill.textContent = `Logged in: ${user.email}`;
+        pill.classList.remove('hidden');
+        btnLogin.classList.add('hidden');
+        btnLogout.classList.remove('hidden');
+      } else {
+        pill.textContent = '';
+        pill.classList.add('hidden');
+        btnLogin.classList.remove('hidden');
+        btnLogout.classList.add('hidden');
+      }
+    }
+
+    // ============================
+    // 3) AUTH
+    // ============================
+    document.getElementById('btnLogin').addEventListener('click', () => openModal('loginModal'));
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      setSessionUI(null);
+      showAlert("Logged out", "You have been signed out.");
+    });
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) return showAlert("Login failed", error.message);
+
+      closeModal('loginModal');
+      setSessionUI(data.user);
+      showAlert("Login successful", "You can now use Register, View Client Data, Contact Tracking, and Load Assignment.");
+    }
+
+    // Restore session on load
+    (async () => {
+      const { data } = await supabaseClient.auth.getSession();
+      setSessionUI(data.session?.user ?? null);
+    })();
+
+    // ============================
+    // 4) REGISTER SHIPPER / RECEIVER
+    // ============================
+    function formToPayload(form) {
+      const fd = new FormData(form);
+      const o = {};
+      for (const [k, v] of fd.entries()) o[k] = (v ?? '').toString().trim() || null;
+      // Optional defaults (if not set in DB)
+      o.status = o.status ?? null;
+      o.source = o.source ?? null;
+      return o;
+    }
+
+    document.getElementById('shipperForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session) return showAlert("Login required", "Please login first.");
+
+      const payload = formToPayload(e.target);
+      payload.client_type = payload.client_type ?? "shipper";
+      payload.status = payload.status ?? "new";
+      payload.source = payload.source ?? "website";
+
+      const { error } = await supabaseClient.from('shippers').insert(payload);
+      if (error) return showAlert("Save failed (Shipper)", error.message);
+
+      e.target.reset();
+      showAlert("Saved", "Shipper saved successfully.");
+      await loadClients(); // refresh list for dropdowns/tables
+    });
+
+    document.getElementById('receiverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session) return showAlert("Login required", "Please login first.");
+
+      const payload = formToPayload(e.target);
+      payload.client_type = payload.client_type ?? "receiver";
+      payload.status = payload.status ?? "new";
+      payload.source = payload.source ?? "website";
+
+      const { error } = await supabaseClient.from('receivers').insert(payload);
+      if (error) return showAlert("Save failed (Receiver)", error.message);
+
+      e.target.reset();
+      showAlert("Saved", "Receiver saved successfully.");
+      await loadClients();
+    });
+
+    // ============================
+    // 5) VIEW CLIENTS (clients_view)
+    // ============================
+    let cachedClients = [];
+    async function loadClients() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session) return showAlert("Login required", "Please login first.");
+
+      const { data, error } = await supabaseClient
+        .from('clients_view')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) return showAlert("Load failed", error.message);
+
+      cachedClients = data || [];
+      renderClients();
+      populateClientDropdown();
+      showAlert("Loaded", `Loaded ${cachedClients.length} clients from clients_view.`);
+    }
+
+    function passesFilter(row) {
+      const t = document.getElementById('filterClientType').value.trim().toLowerCase();
+      const c = document.getElementById('filterCountry').value.trim().toLowerCase();
+      const s = document.getElementById('filterState').value.trim().toLowerCase();
+      const tr = document.getElementById('filterTrailer').value.trim().toLowerCase();
+
+      if (t && (row.client_type || '').toLowerCase() !== t) return false;
+      if (c && !(row.country || '').toLowerCase().includes(c)) return false;
+      if (s && !(row.state_province || '').toLowerCase().includes(s)) return false;
+      if (tr && !(row.preferred_trailer_type || '').toLowerCase().includes(tr)) return false;
+      return true;
+    }
+
+    ['filterClientType','filterCountry','filterState','filterTrailer'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderClients);
+      document.getElementById(id).addEventListener('change', renderClients);
+    });
+
+    function renderClients() {
+      const tbody = document.getElementById('clientsTbody');
+      const rows = cachedClients.filter(passesFilter);
+
+      tbody.innerHTML = rows.map(r => {
+        const created = r.created_at ? new Date(r.created_at).toLocaleString() : '';
+        return `
+          <tr class="border-b">
+            <td class="py-2 pr-4">${escapeHtml(r.client_type || '')}</td>
+            <td class="py-2 pr-4 font-semibold">${escapeHtml(r.company_name || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.contact_name || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.phone || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.email || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.city || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.state_province || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.country || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(r.preferred_trailer_type || '')}</td>
+            <td class="py-2 pr-4">${escapeHtml(created)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populateClientDropdown() {
+      const sel = document.getElementById('clientSelect');
+      if (!cachedClients.length) return;
+
+      sel.innerHTML = `<option value="">Select a client...</option>` + cachedClients.slice(0, 500).map(r => {
+        // IMPORTANT: clients_view currently returns a single id for each row.
+        // We store client_type + that id and later map to shipper_id or receiver_id.
+        const value = JSON.stringify({ client_type: r.client_type, client_id: r.id, company_name: r.company_name || '' });
+        const label = `${r.company_name || '(No name)'} — ${r.client_type}`;
+        return `<option value='${escapeAttr(value)}'>${escapeHtml(label)}</option>`;
+      }).join('');
+    }
+
+    // ============================
+    // 6) CONTACT TRACKING
+    // ============================
+    let lastInsertedContactId = null;
+
+    function getSelectedMethods() {
+      const checked = Array.from(document.querySelectorAll('.cm')).filter(x => x.checked).map(x => x.value);
+      return checked.join(', ');
+    }
+
+    async function saveContact() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const user = sessionData.session?.user;
+      if (!user) return showAlert("Login required", "Please login first.");
+
+      const selValue = document.getElementById('clientSelect').value;
+      if (!selValue) return showAlert("Missing client", "Please select a client.");
+
+      const methods = getSelectedMethods();
+      const remarks = document.getElementById('remarks').value.trim();
+
+      if (!methods) return showAlert("Missing contact method", "Select at least one contact method.");
+      if (!remarks) return showAlert("Missing remarks", "Please enter remarks.");
+
+      const client = JSON.parse(selValue);
+      const payload = {
+        client_type: client.client_type,
+        client_company_name: client.company_name || null,
+        shipper_id: client.client_type === 'shipper' ? client.client_id : null,
+        receiver_id: client.client_type === 'receiver' ? client.client_id : null,
+        contact_methods: methods,
+        remarks: remarks,
+        // followup_status default is 'open' in DB; we can omit it here
+        employee_name: user.email,
+        employee_id: user.id
+      };
+
+      const { data, error } = await supabaseClient
+        .from('contact_tracking')
+        .insert(payload)
+        .select('id')
+        .single();
+
+      if (error) return showAlert("Save failed (Contact)", error.message);
+
+      lastInsertedContactId = data?.id ?? null;
+
+      // Reset
+      document.getElementById('remarks').value = '';
+      document.querySelectorAll('.cm').forEach(x => x.checked = false);
+
+      showAlert("Saved", `Contact recorded. (contact_tracking.id = ${lastInsertedContactId})`);
+      await loadContactHistory();
+    }
+
+    async function loadContactHistory() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session) return showAlert("Login required", "Please login first.");
+
+      const { data, error } = await supabaseClient
+        .from('contact_tracking')
+        .select('id, created_at, client_type, client_company_name, contact_methods, remarks, followup_status, load_id')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) return showAlert("Load failed (History)", error.message);
+
+      const container = document.getElementById('contactHistory');
+      container.innerHTML = (data || []).map(r => {
+        const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
+        return `
+          <div class="card p-3 bg-white">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-bold">#${r.id} <span class="pill ml-2">${escapeHtml(r.client_type || '')}</span></div>
+              <div class="text-xs muted">${escapeHtml(d)}</div>
+            </div>
+            <div class="text-sm mt-1"><b>${escapeHtml(r.client_company_name || '')}</b></div>
+            <div class="text-xs muted mt-1">Methods: ${escapeHtml(r.contact_methods || '')} • Status: ${escapeHtml(r.followup_status || '')} • Load: ${r.load_id ?? '—'}</div>
+            <div class="text-sm mt-2">${escapeHtml(r.remarks || '')}</div>
+          </div>
+        `;
+      }).join('') || `<div class="text-sm muted">No history found.</div>`;
+    }
+
+    // ============================
+    // 7) LOAD ASSIGNMENT + PDF UPLOAD
+    // ============================
+    function openLoadAssignModal() {
+      if (!lastInsertedContactId) {
+        // You can still assign load without a contact, but linking is ideal.
+        showAlert("Note", "Record a Contact first so we can link the load to that follow-up. You can still proceed, but linking is recommended.");
+      }
+      openModal('loadModal');
+      document.getElementById('loadModalStatus').textContent = '';
+      document.getElementById('loadRef').value = '';
+      document.getElementById('bolFile').value = '';
+    }
+
+    async function assignLoadAndUpload() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const user = sessionData.session?.user;
+      if (!user) return showAlert("Login required", "Please login first.");
+
+      const selValue = document.getElementById('clientSelect').value;
+      if (!selValue) return showAlert("Missing client", "Please select a client first.");
+
+      const client = JSON.parse(selValue);
+      const loadRef = document.getElementById('loadRef').value.trim();
+      const fileInput = document.getElementById('bolFile');
+      const file = fileInput.files?.[0];
+
+      if (!loadRef) return showAlert("Missing Load Reference", "Enter the load reference number (BOL).");
+      if (!file) return showAlert("Missing PDF", "Please choose a PDF file to upload.");
+      if (file.type !== "application/pdf") return showAlert("Invalid file type", "Only PDF files are allowed.");
+
+      const statusEl = document.getElementById('loadModalStatus');
+      statusEl.textContent = "Creating load record…";
+
+      // Phase 1: create load row (without bol_pdf_path yet)
+      const loadPayload = {
+        load_reference_number: loadRef,
+        client_type: client.client_type,
+        shipper_id: client.client_type === 'shipper' ? client.client_id : null,
+        receiver_id: client.client_type === 'receiver' ? client.client_id : null,
+        status: "assigned",
+        bol_pdf_uploaded_by: user.email
+      };
+
+      const { data: loadRow, error: loadErr } = await supabaseClient
+        .from('loads')
+        .insert(loadPayload)
+        .select('id')
+        .single();
+
+      if (loadErr) return showAlert("Load create failed", loadErr.message);
+
+      const loadId = loadRow.id;
+
+      // Phase 2: upload PDF to Storage
+      statusEl.textContent = "Uploading PDF to storage…";
+
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+
+      const safeLoadRef = loadRef.replace(/[^a-zA-Z0-9_-]/g, '_');
+      const storagePath = `bol/${yyyy}/${mm}/${safeLoadRef}.pdf`;
+
+      const { error: upErr } = await supabaseClient
+        .storage
+        .from('load-documents')
+        .upload(storagePath, file, { upsert: true, contentType: "application/pdf" });
+
+      if (upErr) return showAlert("PDF upload failed", upErr.message);
+
+      // Phase 3: update loads row with bol_pdf_path + filename
+      statusEl.textContent = "Saving PDF path to database…";
+
+      const { error: updErr } = await supabaseClient
+        .from('loads')
+        .update({
+          bol_pdf_path: storagePath,
+          bol_pdf_filename: file.name,
+          bol_pdf_uploaded_at: new Date().toISOString()
+        })
+        .eq('id', loadId);
+
+      if (updErr) return showAlert("Load update failed", updErr.message);
+
+      // Phase 4: link to last contact (optional but recommended)
+      if (lastInsertedContactId) {
+        statusEl.textContent = "Linking load to last contact…";
+        const { error: linkErr } = await supabaseClient
+          .from('contact_tracking')
+          .update({ load_id: loadId })
+          .eq('id', lastInsertedContactId);
+
+        if (linkErr) return showAlert("Contact link failed", linkErr.message);
+      }
+
+      statusEl.textContent = "Done.";
+      closeModal('loadModal');
+      showAlert("Success", `Load created (id=${loadId}), PDF uploaded, and linked to last contact.`);
+      await loadContactHistory();
+    }
+
+    // ============================
+    // 8) HTML ESCAPING
+    // ============================
+    function escapeHtml(str) {
+      return (str ?? '').toString()
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+    function escapeAttr(str) {
+      // For JSON in option value
+      return escapeHtml(str).replaceAll('\n', ' ');
+    }
+
+    // Optional: load contact history on first view if logged in
+    setTimeout(async () => {
+      const { data } = await supabaseClient.auth.getSession();
+      if (data.session?.user) {
+        await loadContactHistory();
+      }
+    }, 600);
+  </script>
+</body>
 </html>
