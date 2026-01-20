@@ -1,804 +1,1571 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RK LOGIX HUB - Client CRM</title>
-
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RK LOGIX HUB - Connecting Drivers &amp; Dispatchers</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    .card { border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-    .btn { border-radius: 12px; padding: 10px 14px; font-weight: 600; }
-    .btn-primary { background: #111827; color: white; }
-    .btn-outline { border: 1px solid #111827; color: #111827; background: white; }
-    .input { width: 100%; border: 1px solid #d1d5db; border-radius: 12px; padding: 10px 12px; }
-    .label { font-size: 12px; font-weight: 700; color: #374151; }
-    .muted { color: #6b7280; }
-    .pill { border: 1px solid #e5e7eb; padding: 4px 10px; border-radius: 999px; font-size: 12px; }
-    .hidden { display: none; }
-  </style>
-</head>
-
-<body class="bg-gray-50 text-gray-900">
-  <header class="px-5 py-4 bg-white border-b">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
-      <div>
-        <div class="text-xl font-extrabold">RK LOGIX HUB</div>
-        <div class="text-sm muted">Client Registration • Follow-ups • Load Assignment • BOL Storage</div>
+        .hero-bg {
+            background: linear-gradient(135deg, #000000 0%, #1f1f1f 100%);
+        }
+        .section-fade {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-in-out;
+        }
+        .section-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .truck-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="bg-gray-50"><!-- Navigation -->
+  <nav class="bg-black shadow-lg fixed w-full top-0 z-50">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+     <div class="flex items-center">
+      <div class="flex-shrink-0">
+       <h1 class="text-2xl font-bold text-white">RK LOGIX HUB</h1>
       </div>
-
-      <div class="flex items-center gap-2">
-        <span id="sessionPill" class="pill hidden"></span>
-        <button id="btnLogin" class="btn btn-primary">Employee Login</button>
-        <button id="btnLogout" class="btn btn-outline hidden">Logout</button>
+     </div>
+     <div class="hidden md:block">
+      <div class="ml-10 flex items-baseline space-x-4"><a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a> <a href="#dispatcher" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DISPATCHER</a> <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a> <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a> <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a> <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button> <button onclick="showEmployeeLogin()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">EMPLOYEE LOGIN</button>
       </div>
+     </div><!-- Mobile menu button -->
+     <div class="md:hidden"><button onclick="toggleMobileMenu()" class="text-white hover:text-gray-300 focus:outline-none">
+       <svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+       </svg></button>
+     </div>
     </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-5 py-6 space-y-6">
-
-    <!-- STATUS / ALERT -->
-    <div id="alert" class="hidden card p-4 bg-white">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <div id="alertTitle" class="font-bold"></div>
-          <div id="alertMsg" class="text-sm muted mt-1"></div>
-        </div>
-        <button class="btn btn-outline" onclick="hideAlert()">Close</button>
-      </div>
+   </div><!-- Mobile menu -->
+   <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
+    <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#dispatcher" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DISPATCHER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="showEmployeeLogin()" class="w-full text-left bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-base font-medium">EMPLOYEE LOGIN</button>
     </div>
-
-    <!-- QUICK NAV -->
-    <div class="card p-4 bg-white">
-      <div class="flex flex-wrap gap-2">
-        <button class="btn btn-outline" onclick="scrollToId('registerSection')">Register Client</button>
-        <button class="btn btn-outline" onclick="scrollToId('viewClientsSection')">View Client Data</button>
-        <button class="btn btn-outline" onclick="scrollToId('contactTrackingSection')">Contact Tracking</button>
-      </div>
-      <div class="text-sm muted mt-2">
-        Note: Data operations require employee login (Supabase Auth). PDFs are stored privately in Supabase Storage.
-      </div>
+   </div>
+  </nav><!-- Home Section -->
+  <section id="home" class="hero-bg text-white pt-20">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="text-center">
+     <div class="truck-icon mb-8">
+      <svg class="w-20 h-20 mx-auto text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+      </svg>
+     </div>
+     <h1 class="text-5xl md:text-6xl font-bold mb-6">RK LOGIX HUB</h1>
+     <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Connecting Drivers and Dispatchers Through Smart Technology</p>
+     <p class="text-lg mb-10 max-w-2xl mx-auto">Your trusted platform for seamless trucking operations, efficient load management, and reliable transportation solutions.</p>
+     <div class="space-x-4"><button onclick="showRegister()" class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">Get Started</button>
+     </div>
     </div>
-
-    <!-- REGISTER CLIENT -->
-    <section id="registerSection" class="card p-5 bg-white">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="text-lg font-extrabold">Register Client</h2>
-          <p class="text-sm muted mt-1">Register Shipper and Receiver into separate tables for future business and search.</p>
-        </div>
-        <div class="pill">Tables: shippers • receivers</div>
-      </div>
-
-      <div class="mt-5 grid md:grid-cols-2 gap-4">
-        <!-- Shipper -->
-        <div class="card p-4 bg-gray-50">
-          <div class="font-extrabold">Shipper Registration</div>
-          <form id="shipperForm" class="mt-3 space-y-3">
-            <div>
-              <div class="label">Company Name</div>
-              <input class="input" name="company_name" required />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Contact Name</div>
-                <input class="input" name="contact_name" />
-              </div>
-              <div>
-                <div class="label">Phone</div>
-                <input class="input" name="phone" />
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Email</div>
-                <input class="input" name="email" type="email" />
-              </div>
-              <div>
-                <div class="label">Company Website</div>
-                <input class="input" name="company_website" />
-              </div>
-            </div>
-
-            <div class="label">Street Address</div>
-            <input class="input" name="street_address" />
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">City</div>
-                <input class="input" name="city" />
-              </div>
-              <div>
-                <div class="label">State/Province</div>
-                <input class="input" name="state_province" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Country</div>
-                <input class="input" name="country" />
-              </div>
-              <div>
-                <div class="label">Postal Code</div>
-                <input class="input" name="postal_code" />
-              </div>
-            </div>
-
-            <div>
-              <div class="label">Load Description</div>
-              <input class="input" name="load_description" />
-            </div>
-            <div>
-              <div class="label">Preferred Trailer Type</div>
-              <input class="input" name="preferred_trailer_type" placeholder="Dry Van / Reefer / Flatbed..." />
-            </div>
-
-            <div class="flex gap-2 pt-2">
-              <button class="btn btn-primary" type="submit">Save Shipper</button>
-              <button class="btn btn-outline" type="button" onclick="document.getElementById('shipperForm').reset()">Clear</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Receiver -->
-        <div class="card p-4 bg-gray-50">
-          <div class="font-extrabold">Receiver Registration</div>
-          <form id="receiverForm" class="mt-3 space-y-3">
-            <div>
-              <div class="label">Company Name</div>
-              <input class="input" name="company_name" required />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Contact Name</div>
-                <input class="input" name="contact_name" />
-              </div>
-              <div>
-                <div class="label">Phone</div>
-                <input class="input" name="phone" />
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Email</div>
-                <input class="input" name="email" type="email" />
-              </div>
-              <div>
-                <div class="label">Company Website</div>
-                <input class="input" name="company_website" />
-              </div>
-            </div>
-
-            <div class="label">Street Address</div>
-            <input class="input" name="street_address" />
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">City</div>
-                <input class="input" name="city" />
-              </div>
-              <div>
-                <div class="label">State/Province</div>
-                <input class="input" name="state_province" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <div class="label">Country</div>
-                <input class="input" name="country" />
-              </div>
-              <div>
-                <div class="label">Postal Code</div>
-                <input class="input" name="postal_code" />
-              </div>
-            </div>
-
-            <div>
-              <div class="label">Load Description</div>
-              <input class="input" name="load_description" />
-            </div>
-            <div>
-              <div class="label">Preferred Trailer Type</div>
-              <input class="input" name="preferred_trailer_type" placeholder="Dry Van / Reefer / Flatbed..." />
-            </div>
-
-            <div class="flex gap-2 pt-2">
-              <button class="btn btn-primary" type="submit">Save Receiver</button>
-              <button class="btn btn-outline" type="button" onclick="document.getElementById('receiverForm').reset()">Clear</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW CLIENTS -->
-    <section id="viewClientsSection" class="card p-5 bg-white">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="text-lg font-extrabold">View Client Data</h2>
-          <p class="text-sm muted mt-1">Loads from <b>clients_view</b> (combined shipper + receiver).</p>
-        </div>
-        <div class="flex gap-2">
-          <button class="btn btn-outline" onclick="loadClients()">Refresh Data</button>
-        </div>
-      </div>
-
-      <div class="mt-4 grid md:grid-cols-4 gap-3">
-        <div>
-          <div class="label">Client Type</div>
-          <select id="filterClientType" class="input">
-            <option value="">All</option>
-            <option value="shipper">Shipper</option>
-            <option value="receiver">Receiver</option>
-          </select>
-        </div>
-        <div>
-          <div class="label">Country</div>
-          <input id="filterCountry" class="input" placeholder="Canada / USA" />
-        </div>
-        <div>
-          <div class="label">State/Province</div>
-          <input id="filterState" class="input" placeholder="ON / NY ..." />
-        </div>
-        <div>
-          <div class="label">Trailer Type</div>
-          <input id="filterTrailer" class="input" placeholder="Dry Van / Reefer ..." />
-        </div>
-      </div>
-
-      <div class="mt-4 overflow-auto">
-        <table class="min-w-full text-sm">
-          <thead class="text-left">
-            <tr class="border-b">
-              <th class="py-2 pr-4">Type</th>
-              <th class="py-2 pr-4">Company</th>
-              <th class="py-2 pr-4">Contact</th>
-              <th class="py-2 pr-4">Phone</th>
-              <th class="py-2 pr-4">Email</th>
-              <th class="py-2 pr-4">City</th>
-              <th class="py-2 pr-4">State</th>
-              <th class="py-2 pr-4">Country</th>
-              <th class="py-2 pr-4">Trailer</th>
-              <th class="py-2 pr-4">Created</th>
-            </tr>
-          </thead>
-          <tbody id="clientsTbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- CONTACT TRACKING -->
-    <section id="contactTrackingSection" class="card p-5 bg-white">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="text-lg font-extrabold">Contact Tracking</h2>
-          <p class="text-sm muted mt-1">Record each follow-up. Assign a load and upload BOL PDF when applicable.</p>
-        </div>
-        <div class="pill">Tables: contact_tracking • loads • Storage: load-documents</div>
-      </div>
-
-      <div class="mt-5 grid md:grid-cols-2 gap-4">
-        <div class="card p-4 bg-gray-50">
-          <div class="font-extrabold">Record Follow-up</div>
-
-          <div class="mt-3 space-y-3">
-            <div>
-              <div class="label">Client</div>
-              <select id="clientSelect" class="input">
-                <option value="">Load clients… (click Refresh Clients)</option>
-              </select>
-              <div class="text-xs muted mt-1">Tip: Click “Refresh Data” in View Client Data first, then come here.</div>
-            </div>
-
-            <div>
-              <div class="label">Contact Methods</div>
-              <div class="flex flex-wrap gap-3 mt-2 text-sm">
-                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Email"/> Email</label>
-                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Phone Call"/> Phone Call</label>
-                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="Social Media"/> Social Media</label>
-                <label class="flex items-center gap-2"><input type="checkbox" class="cm" value="WhatsApp"/> WhatsApp</label>
-              </div>
-            </div>
-
-            <div>
-              <div class="label">Remarks</div>
-              <textarea id="remarks" class="input" rows="4" placeholder="Write follow-up notes..."></textarea>
-            </div>
-
-            <div class="flex gap-2 pt-2">
-              <button class="btn btn-primary" onclick="saveContact()">Record Contact</button>
-              <button class="btn btn-outline" onclick="openLoadAssignModal()">Load Assigned</button>
-            </div>
-
-            <div class="text-xs muted">
-              Load Assigned workflow: creates load → uploads PDF → updates load bol_pdf_path → links last contact with load_id.
-            </div>
-          </div>
-        </div>
-
-        <div class="card p-4 bg-gray-50">
-          <div class="font-extrabold">Recent Contact History</div>
-          <div class="text-sm muted mt-1">Shows last 20 follow-ups (for quick validation).</div>
-          <div class="mt-3 space-y-2" id="contactHistory"></div>
-          <div class="mt-3">
-            <button class="btn btn-outline" onclick="loadContactHistory()">Refresh History</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-    <div class="bg-white card p-5 w-full max-w-md">
-      <div class="flex items-start justify-between">
-        <div>
-          <div class="text-lg font-extrabold">Employee Login</div>
-          <div class="text-sm muted">Use Supabase Auth email/password.</div>
-        </div>
-        <button class="btn btn-outline" onclick="closeModal('loginModal')">Close</button>
-      </div>
-
-      <div class="mt-4 space-y-3">
-        <div>
-          <div class="label">Email</div>
-          <input id="loginEmail" class="input" type="email" placeholder="employee@rklogixhub.com" />
-        </div>
-        <div>
-          <div class="label">Password</div>
-          <input id="loginPassword" class="input" type="password" placeholder="••••••••" />
-        </div>
-        <button class="btn btn-primary w-full" onclick="login()">Login</button>
-      </div>
+   </div>
+  </section><!-- Dispatcher Section -->
+  <section id="dispatcher" class="py-20 bg-white section-fade">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+     <h2 class="text-4xl font-bold text-gray-900 mb-4">For Dispatchers</h2>
+     <p class="text-xl text-gray-600 max-w-3xl mx-auto">Streamline your operations with our comprehensive dispatch management system</p>
     </div>
-  </div>
-
-  <!-- LOAD ASSIGN MODAL -->
-  <div id="loadModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-    <div class="bg-white card p-5 w-full max-w-xl">
-      <div class="flex items-start justify-between">
-        <div>
-          <div class="text-lg font-extrabold">Load Assignment</div>
-          <div class="text-sm muted">Enter load reference number and upload BOL PDF.</div>
-        </div>
-        <button class="btn btn-outline" onclick="closeModal('loadModal')">Close</button>
+    <div class="grid md:grid-cols-3 gap-8">
+     <div class="text-center p-6 bg-gray-100 rounded-lg">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+       </svg>
       </div>
-
-      <div class="mt-4 space-y-3">
-        <div>
-          <div class="label">Load Reference Number (BOL)</div>
-          <input id="loadRef" class="input" placeholder="e.g., LOAD-12345" />
-        </div>
-
-        <div>
-          <div class="label">BOL PDF (Upload)</div>
-          <input id="bolFile" class="input" type="file" accept="application/pdf" />
-          <div class="text-xs muted mt-1">Only PDF allowed. Stored in bucket: load-documents (private).</div>
-        </div>
-
-        <div class="flex gap-2 pt-2">
-          <button class="btn btn-primary" onclick="assignLoadAndUpload()">Create Load + Upload PDF</button>
-          <button class="btn btn-outline" onclick="closeModal('loadModal')">Cancel</button>
-        </div>
-
-        <div id="loadModalStatus" class="text-sm muted"></div>
+      <h3 class="text-xl font-semibold mb-2">Load Management</h3>
+      <p class="text-gray-600">Efficiently manage and assign loads to available drivers with real-time tracking</p>
+     </div>
+     <div class="text-center p-6 bg-gray-100 rounded-lg">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+       </svg>
       </div>
+      <h3 class="text-xl font-semibold mb-2">Driver Network</h3>
+      <p class="text-gray-600">Access to a verified network of professional drivers ready for your loads</p>
+     </div>
+     <div class="text-center p-6 bg-gray-100 rounded-lg">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2">Analytics &amp; Reports</h3>
+      <p class="text-gray-600">Comprehensive reporting and analytics to optimize your dispatch operations</p>
+     </div>
     </div>
-  </div>
-
+   </div>
+  </section><!-- Driver Section -->
+  <section id="driver" class="py-20 bg-gray-100 section-fade">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+     <h2 class="text-4xl font-bold text-gray-900 mb-4">For Drivers</h2>
+     <p class="text-xl text-gray-600 max-w-3xl mx-auto">Find the best loads and grow your trucking business with our driver-focused platform</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+     <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-black">Find Loads</h3>
+      <p class="text-gray-600">Browse and select from thousands of available loads that match your route</p>
+     </div>
+     <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-black">Quick Payments</h3>
+      <p class="text-gray-600">Fast and secure payment processing to keep your cash flow steady</p>
+     </div>
+     <div class="text-center p-6 bg-white rounded-lg shadow-md border border-gray-200">
+      <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2 text-black">24/7 Support</h3>
+      <p class="text-gray-600">Round-the-clock support to help you with any issues on the road</p>
+     </div>
+    </div>
+   </div>
+  </section><!-- About Section -->
+  <section id="about" class="py-20 bg-white section-fade">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+     <div>
+      <h2 class="text-4xl font-bold text-gray-900 mb-6">About Us</h2>
+      <p class="text-lg text-gray-600 mb-6">RK Logix Hub was founded in 2024 by an engineer with a strong understanding of supply chain and logistics. The founder assembled a skilled team and provided specialised training in mid-mile and last-mile logistics to deliver efficient, reliable, and technology-driven delivery solutions.</p>
+      <p class="text-lg text-gray-600 mb-6">Our company leverages artificial intelligence in daily operations to optimise transportation processes, streamline decision-making, and enhance operational efficiency. We are now expanding into dispatching and safety management for owner-operators, integrating AI-driven tools to improve route planning, compliance monitoring, and safety performance.</p>
+      <div class="mb-8">
+       <h3 class="text-2xl font-bold text-gray-900 mb-4">Mission Statement</h3>
+       <p class="text-lg text-gray-600 mb-6">To revolutionise logistics and dispatch management by combining deep industry expertise with cutting-edge AI, ensuring speed, accuracy, and safety in every delivery.</p>
+      </div>
+      <div class="mb-6">
+       <h3 class="text-2xl font-bold text-gray-900 mb-4">Vision Statement</h3>
+       <p class="text-lg text-gray-600 mb-6">To become a leading global logistics partner, setting new standards for operational efficiency, safety, and technology integration in the transportation industry.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+       <div class="text-center p-4 bg-gray-100 rounded-lg">
+        <div class="text-2xl font-bold text-black">
+         500+
+        </div>
+        <div class="text-gray-600">
+         Active Drivers
+        </div>
+       </div>
+       <div class="text-center p-4 bg-black rounded-lg">
+        <div class="text-2xl font-bold text-white">
+         100+
+        </div>
+        <div class="text-gray-300">
+         Dispatchers
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="text-center">
+      <svg class="w-80 h-80 mx-auto text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+      </svg>
+     </div>
+    </div>
+   </div>
+  </section><!-- Contact Section -->
+  <section id="contact" class="py-20 bg-gray-900 text-white section-fade">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+     <h2 class="text-4xl font-bold mb-4">Contact Us</h2>
+     <p class="text-xl text-gray-300">Get in touch with our team for support or inquiries</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8 mb-12">
+     <div class="text-center">
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2">Phone</h3>
+      <p class="text-gray-300">+1 (437)-869-4896</p>
+     </div>
+     <div class="text-center">
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2">Email</h3>
+      <p class="text-gray-300">rklogixhub@gmail.com</p>
+     </div>
+     <div class="text-center">
+      <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+       </svg>
+      </div>
+      <h3 class="text-xl font-semibold mb-2">Address</h3>
+      <p class="text-gray-300">6 park vista, M4B 1A2</p>
+     </div>
+    </div><!-- Social Media Section -->
+    <div class="text-center">
+     <h3 class="text-2xl font-bold mb-6">Follow Us</h3>
+     <div class="flex justify-center space-x-4 flex-wrap gap-4"><a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.347-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488" />
+       </svg></a> <a href="#" class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+       <svg class="w-6 h-6 text-black" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+       </svg></a>
+     </div>
+    </div>
+   </div>
+  </section><!-- Employee Login Modal -->
+  <div id="employeeLoginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+   <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+    <div class="flex justify-between items-center mb-6">
+     <h3 class="text-2xl font-bold text-gray-900">Employee Login</h3><button onclick="closeModal('employeeLoginModal')" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div>
+    <form id="employeeLoginForm" onsubmit="handleEmployeeLogin(event)">
+     <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label> <input type="email" name="employeeEmail" placeholder="Enter your email address" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+     </div>
+     <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Password</label> <input type="password" name="password" placeholder="Enter your password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+     </div><button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors"> Login </button>
+    </form>
+   </div>
+  </div><!-- Register Modal -->
+  <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+   <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+    <div class="flex justify-between items-center mb-6">
+     <h3 class="text-2xl font-bold text-gray-900">Register</h3><button onclick="closeModal('registerModal')" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div>
+    <form id="registerForm" onsubmit="handleRegister(event)">
+     <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label> <input type="text" name="name" placeholder="Full Name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+     </div>
+     <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Email</label> <input type="email" name="email" placeholder="Email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+     </div>
+     <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Phone</label> <input type="tel" name="phone" placeholder="Phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+     </div>
+     <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label> <select name="role" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="Driver">Driver</option> <option value="Dispatcher">Dispatcher</option> </select>
+     </div><button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors"> Register </button>
+    </form>
+   </div>
+  </div><!-- Employee Dashboard Modal -->
+  <div id="employeeDashboard" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+   <div class="bg-white rounded-lg p-8 max-w-6xl w-full mx-4 max-h-screen overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+     <h3 class="text-2xl font-bold text-gray-900">Employee Dashboard</h3><button onclick="closeModal('employeeDashboard')" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div>
+    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex justify-between items-center">
+     <div>
+      <p class="text-sm text-gray-700">Welcome, <span id="employeeName" class="font-bold"></span></p>
+     </div><button onclick="employeeLogout()" class="text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">Logout</button>
+    </div><!-- Tab Navigation -->
+    <div class="mb-6 border-b border-gray-200">
+     <nav class="flex space-x-4"><button onclick="switchTab('register')" id="registerTab" class="tab-button px-4 py-2 font-semibold border-b-2 border-black text-black"> Register Client </button> <button onclick="switchTab('viewData')" id="viewDataTab" class="tab-button px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700"> View Client Data </button> <button onclick="switchTab('contactTracking')" id="contactTrackingTab" class="tab-button px-4 py-2 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700"> Contact Tracking </button>
+     </nav>
+    </div><!-- Register Tab Content -->
+    <div id="registerTabContent" class="tab-content">
+     <form id="clientRegistrationForm" onsubmit="handleClientRegistration(event)">
+      <h4 class="text-xl font-bold text-gray-900 mb-6">Register Shipper &amp; Receiver</h4><!-- Shipper Section -->
+      <div class="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+       <h5 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg> Shipper Information</h5>
+       <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Company Name *</label> <input type="text" name="shipperCompanyName" placeholder="Shipper Company" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Contact Person Name *</label> <input type="text" name="shipperContactName" placeholder="Contact Person Full Name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+       </div>
+       <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Phone Number *</label> <input type="tel" name="shipperPhone" placeholder="+1 (123) 456-7890" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Email *</label> <input type="email" name="shipperEmail" placeholder="shipper@company.com" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Street Address *</label> <input type="text" name="shipperStreetAddress" placeholder="Street Address" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+       </div>
+       <div class="grid md:grid-cols-3 gap-4 mt-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">City *</label> <input type="text" name="shipperCity" placeholder="City" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Country *</label> <select name="shipperCountry" id="shipperCountry" onchange="updateShipperRegions()" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">Select Country</option> <option value="USA">USA</option> <option value="Canada">Canada</option> </select>
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">State/Province *</label> <select name="shipperRegion" id="shipperRegion" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">Select Country First</option> </select>
+        </div>
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">ZIP/Postal Code *</label> <input type="text" name="shipperZipCode" placeholder="ZIP or Postal Code" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Company Website</label> <input type="url" name="shipperWebsite" placeholder="https://www.company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Load Description *</label> <input type="text" name="shipperLoad" placeholder="e.g., Pallets, Boxes, Equipment" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Trailer Type *</label> <select name="shipperTrailerType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"> <option value="">Select Trailer Type</option> <option value="Dry Van">Dry Van</option> <option value="Reefer">Reefer</option> <option value="Box Truck">Box Truck</option> <option value="Sprinter">Sprinter</option> </select>
+       </div>
+      </div><!-- Receiver Section -->
+      <div class="mb-8 p-6 bg-green-50 rounded-lg border border-green-200">
+       <h5 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg> Receiver Information</h5>
+       <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Company Name *</label> <input type="text" name="receiverCompanyName" placeholder="Receiver Company" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Contact Person Name *</label> <input type="text" name="receiverContactName" placeholder="Contact Person Full Name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+       </div>
+       <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Phone Number *</label> <input type="tel" name="receiverPhone" placeholder="+1 (123) 456-7890" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Email *</label> <input type="email" name="receiverEmail" placeholder="receiver@company.com" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Street Address *</label> <input type="text" name="receiverStreetAddress" placeholder="Street Address" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div class="grid md:grid-cols-3 gap-4 mt-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">City *</label> <input type="text" name="receiverCity" placeholder="City" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Country *</label> <select name="receiverCountry" id="receiverCountry" onchange="updateReceiverRegions()" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"> <option value="">Select Country</option> <option value="USA">USA</option> <option value="Canada">Canada</option> </select>
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">State/Province *</label> <select name="receiverRegion" id="receiverRegion" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"> <option value="">Select Country First</option> </select>
+        </div>
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">ZIP/Postal Code *</label> <input type="text" name="receiverZipCode" placeholder="ZIP or Postal Code" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Company Website</label> <input type="url" name="receiverWebsite" placeholder="https://www.company.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Load Description *</label> <input type="text" name="receiverLoad" placeholder="e.g., Pallets, Boxes, Equipment" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+       </div>
+       <div class="mt-4"><label class="block text-gray-700 text-sm font-bold mb-2">Trailer Type *</label> <select name="receiverTrailerType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"> <option value="">Select Trailer Type</option> <option value="Dry Van">Dry Van</option> <option value="Reefer">Reefer</option> <option value="Box Truck">Box Truck</option> <option value="Sprinter">Sprinter</option> </select>
+       </div>
+      </div><!-- Additional Notes -->
+      <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Additional Notes (Optional)</label> <textarea name="notes" placeholder="Any special instructions or additional information..." rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"></textarea>
+      </div><button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-md transition-colors"> Register Client Information </button>
+     </form>
+    </div><!-- View Data Tab Content -->
+    <div id="viewDataTabContent" class="tab-content hidden">
+     <div class="mb-6">
+      <div class="flex justify-between items-center mb-4">
+       <h4 class="text-xl font-bold text-gray-900">Registered Clients</h4><button onclick="loadClientData()" class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg> Refresh Data </button>
+      </div><!-- Filter Controls -->
+      <div class="p-4 bg-gray-100 rounded-lg border border-gray-300 mb-4">
+       <h5 class="text-lg font-semibold text-gray-900 mb-3">Filter by Location &amp; Trailer Type</h5>
+       <div class="grid md:grid-cols-5 gap-4 mb-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Client Type</label> <select id="filterClientType" onchange="applyFilters()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="all">All (Shipper &amp; Receiver)</option> <option value="shipper">Shipper Only</option> <option value="receiver">Receiver Only</option> </select>
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Country</label> <select id="filterCountry" onchange="updateFilterRegions()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="all">All Countries</option> <option value="USA">USA</option> <option value="Canada">Canada</option> </select>
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">State/Province</label> <select id="filterRegion" onchange="applyFilters()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="all">All States/Provinces</option> </select>
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Trailer Type</label> <select id="filterTrailerType" onchange="applyFilters()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="all">All Trailer Types</option> <option value="Dry Van">Dry Van</option> <option value="Reefer">Reefer</option> <option value="Box Truck">Box Truck</option> <option value="Sprinter">Sprinter</option> </select>
+        </div>
+        <div class="flex items-end"><button onclick="clearFilters()" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md"> Clear Filters </button>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div id="loadingMessage" class="text-center py-8 hidden">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      <p class="mt-2 text-gray-600">Loading client data...</p>
+     </div>
+     <div id="dataContainer" class="overflow-x-auto">
+      <p class="text-gray-500 text-center py-8">Click "Refresh Data" to load client information</p>
+     </div>
+    </div><!-- Contact Tracking Tab Content -->
+    <div id="contactTrackingTabContent" class="tab-content hidden">
+     <h4 class="text-xl font-bold text-gray-900 mb-6">Record Client Contact</h4>
+     <form id="contactTrackingForm" onsubmit="handleContactTracking(event)"><!-- Client Selection -->
+      <div class="mb-6 p-6 bg-gray-50 rounded-lg border border-gray-300">
+       <h5 class="text-lg font-bold text-gray-900 mb-4">Select Client</h5>
+       <div class="grid md:grid-cols-2 gap-4">
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Client Company Name *</label> <input type="text" name="clientCompany" placeholder="Enter company name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+        </div>
+        <div><label class="block text-gray-700 text-sm font-bold mb-2">Client Type *</label> <select name="clientType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="">Select type</option> <option value="Shipper">Shipper</option> <option value="Receiver">Receiver</option> </select>
+        </div>
+       </div>
+      </div><!-- Contact Methods -->
+      <div class="mb-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
+       <h5 class="text-lg font-bold text-gray-900 mb-4">Contact Method(s)</h5>
+       <p class="text-sm text-gray-600 mb-4">Select all methods used to contact this client:</p>
+       <div class="grid md:grid-cols-2 gap-4"><label class="flex items-center space-x-3 p-3 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-gray-50"> <input type="checkbox" name="contactMethod" value="EMAIL" class="w-5 h-5 text-black border-gray-300 rounded focus:ring-black">
+         <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg><span class="font-semibold">Email</span>
+         </div></label> <label class="flex items-center space-x-3 p-3 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-gray-50"> <input type="checkbox" name="contactMethod" value="PHONE CALL" class="w-5 h-5 text-black border-gray-300 rounded focus:ring-black">
+         <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg><span class="font-semibold">Phone Call</span>
+         </div></label> <label class="flex items-center space-x-3 p-3 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-gray-50"> <input type="checkbox" name="contactMethod" value="SOCIAL MEDIA" class="w-5 h-5 text-black border-gray-300 rounded focus:ring-black">
+         <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+          </svg><span class="font-semibold">Social Media</span>
+         </div></label> <label class="flex items-center space-x-3 p-3 bg-white rounded-md border border-gray-300 cursor-pointer hover:bg-gray-50"> <input type="checkbox" name="contactMethod" value="WHATSAPP" class="w-5 h-5 text-black border-gray-300 rounded focus:ring-black">
+         <div class="flex items-center">
+          <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488" />
+          </svg><span class="font-semibold">WhatsApp</span>
+         </div></label>
+       </div>
+      </div><!-- Remarks -->
+      <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Remarks / Notes *</label> <textarea name="remarks" placeholder="Enter details about the contact (e.g., discussion points, follow-up needed, client response, etc.)" rows="5" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"></textarea>
+       <p class="text-xs text-gray-500 mt-1">Provide detailed notes about the conversation and any follow-up actions needed</p>
+      </div><button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-md transition-colors"> Record Contact </button>
+     </form><!-- Load Assigned Button -->
+     <div class="mt-6 text-center"><button onclick="showLoadAssignmentModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-md transition-colors inline-flex items-center">
+       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg> Load Assigned </button>
+     </div><!-- Contact History -->
+     <div class="mt-8 pt-8 border-t border-gray-300">
+      <div class="flex justify-between items-center mb-4">
+       <h4 class="text-xl font-bold text-gray-900">Contact History</h4><button onclick="loadContactHistory()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md flex items-center text-sm">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg> Refresh </button>
+      </div>
+      <div id="contactHistoryLoading" class="text-center py-8 hidden">
+       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+       <p class="mt-2 text-gray-600">Loading contact history...</p>
+      </div>
+      <div id="contactHistoryContainer" class="overflow-x-auto">
+       <p class="text-gray-500 text-center py-8">Click "Refresh" to load contact history</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Load Assignment Modal -->
+  <div id="loadAssignmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+   <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+    <div class="flex justify-between items-center mb-6">
+     <h3 class="text-2xl font-bold text-gray-900">Load Assignment Workflow</h3><button onclick="closeLoadAssignmentModal()" class="text-gray-400 hover:text-gray-600">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg></button>
+    </div><!-- Step 1: Upload Rate Confirmation -->
+    <div id="step1Upload" class="step-content">
+     <div class="p-6 bg-blue-50 rounded-lg border border-blue-200 mb-6">
+      <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+       <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+       </svg> Step 1: Upload Rate Confirmation Document</h4>
+      <p class="text-sm text-gray-600 mb-4">Please upload the Rate Confirmation PDF document for this load.</p>
+      <form id="rateConfirmationForm" onsubmit="handleRateConfirmationUpload(event)">
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Load ID / Reference Number *</label> <input type="text" name="loadId" placeholder="Enter load ID or reference number" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Rate Confirmation Document (PDF) *</label> <input type="file" name="rateConfirmationPdf" accept=".pdf" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <p class="text-xs text-gray-500 mt-1">Only PDF files are accepted</p>
+       </div><button type="submit" id="uploadButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors"> Upload Document </button>
+      </form>
+     </div>
+    </div><!-- Step 2: Load Confirm Button -->
+    <div id="step2Confirm" class="step-content hidden">
+     <div class="p-6 bg-green-50 rounded-lg border border-green-200 mb-6">
+      <div class="flex items-center justify-center mb-4">
+       <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+       </div>
+      </div>
+      <h4 class="text-lg font-bold text-gray-900 mb-2 text-center">Document Uploaded Successfully!</h4>
+      <p class="text-sm text-gray-600 mb-4 text-center">Rate confirmation document has been stored securely.</p>
+      <p class="text-sm text-gray-700 mb-4 text-center">Load ID: <span id="confirmedLoadId" class="font-bold"></span></p><button onclick="confirmLoad()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors"> Confirm Load </button>
+     </div>
+    </div><!-- Step 3: Pickup Instructions -->
+    <div id="step3Instructions" class="step-content hidden">
+     <div class="p-6 bg-purple-50 rounded-lg border border-purple-200 mb-6">
+      <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+       <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg> Step 3: Add Pickup Instructions</h4>
+      <form id="pickupInstructionsForm" onsubmit="handlePickupInstructions(event)">
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Driver Email Address *</label> <input type="email" name="driverEmail" placeholder="driver@example.com" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Driver Name *</label> <input type="text" name="driverName" placeholder="Enter driver's full name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Pickup Location *</label> <input type="text" name="pickupLocation" placeholder="Full pickup address" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Pickup Date &amp; Time *</label> <input type="datetime-local" name="pickupDateTime" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Delivery Location *</label> <input type="text" name="deliveryLocation" placeholder="Full delivery address" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+       </div>
+       <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Special Instructions</label> <textarea name="specialInstructions" placeholder="Any special pickup or delivery instructions..." rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+       </div><button type="submit" id="sendInstructionsButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-md transition-colors"> Send Instructions to Driver via Email </button>
+      </form>
+     </div>
+    </div><!-- Step 4: Success Message -->
+    <div id="step4Success" class="step-content hidden">
+     <div class="p-6 bg-green-50 rounded-lg border border-green-200 text-center">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+       <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+       </svg>
+      </div>
+      <h4 class="text-2xl font-bold text-gray-900 mb-2">Instructions Sent Successfully!</h4>
+      <p class="text-gray-600 mb-6">Pickup instructions have been emailed to the driver.</p><button onclick="closeLoadAssignmentModal()" class="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-md font-semibold transition-colors"> Close </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Footer -->
+  <footer class="bg-black text-white py-8">
+   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <p>© 2024 RK LOGIX HUB. All rights reserved.</p>
+   </div>
+  </footer>
   <script>
-    // ============================
-    // 1) SUPABASE CONFIG
-    // ============================
-    const SUPABASE_URL = "https://gtwpndodljngyiyfpzcy.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_u-lCgvNcQ910xc_n3oVnlQ_4DVBr";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ============================
-    // 2) SMALL UI HELPERS
-    // ============================
-    function showAlert(title, msg) {
-      document.getElementById('alertTitle').textContent = title;
-      document.getElementById('alertMsg').textContent = msg;
-      document.getElementById('alert').classList.remove('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    function hideAlert() {
-      document.getElementById('alert').classList.add('hidden');
-    }
-    function openModal(id) {
-      document.getElementById(id).classList.remove('hidden');
-    }
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-    function scrollToId(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    function setSessionUI(user) {
-      const pill = document.getElementById('sessionPill');
-      const btnLogin = document.getElementById('btnLogin');
-      const btnLogout = document.getElementById('btnLogout');
-
-      if (user) {
-        pill.textContent = `Logged in: ${user.email}`;
-        pill.classList.remove('hidden');
-        btnLogin.classList.add('hidden');
-        btnLogout.classList.remove('hidden');
-      } else {
-        pill.textContent = '';
-        pill.classList.add('hidden');
-        btnLogin.classList.remove('hidden');
-        btnLogout.classList.add('hidden');
-      }
-    }
-
-    // ============================
-    // 3) AUTH
-    // ============================
-    document.getElementById('btnLogin').addEventListener('click', () => openModal('loginModal'));
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      setSessionUI(null);
-      showAlert("Logged out", "You have been signed out.");
-    });
-
-    async function login() {
-      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-      const password = document.getElementById('loginPassword').value.trim();
-
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) return showAlert("Login failed", error.message);
-
-      closeModal('loginModal');
-      setSessionUI(data.user);
-      showAlert("Login successful", "You can now use Register, View Client Data, Contact Tracking, and Load Assignment.");
-    }
-
-    // Restore session on load
-    (async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      setSessionUI(data.session?.user ?? null);
-    })();
-
-    // ============================
-    // 4) REGISTER SHIPPER / RECEIVER
-    // ============================
-    function formToPayload(form) {
-      const fd = new FormData(form);
-      const o = {};
-      for (const [k, v] of fd.entries()) o[k] = (v ?? '').toString().trim() || null;
-      // Optional defaults (if not set in DB)
-      o.status = o.status ?? null;
-      o.source = o.source ?? null;
-      return o;
-    }
-
-    document.getElementById('shipperForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      if (!sessionData.session) return showAlert("Login required", "Please login first.");
-
-      const payload = formToPayload(e.target);
-      payload.client_type = payload.client_type ?? "shipper";
-      payload.status = payload.status ?? "new";
-      payload.source = payload.source ?? "website";
-
-      const { error } = await supabaseClient.from('shippers').insert(payload);
-      if (error) return showAlert("Save failed (Shipper)", error.message);
-
-      e.target.reset();
-      showAlert("Saved", "Shipper saved successfully.");
-      await loadClients(); // refresh list for dropdowns/tables
-    });
-
-    document.getElementById('receiverForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      if (!sessionData.session) return showAlert("Login required", "Please login first.");
-
-      const payload = formToPayload(e.target);
-      payload.client_type = payload.client_type ?? "receiver";
-      payload.status = payload.status ?? "new";
-      payload.source = payload.source ?? "website";
-
-      const { error } = await supabaseClient.from('receivers').insert(payload);
-      if (error) return showAlert("Save failed (Receiver)", error.message);
-
-      e.target.reset();
-      showAlert("Saved", "Receiver saved successfully.");
-      await loadClients();
-    });
-
-    // ============================
-    // 5) VIEW CLIENTS (clients_view)
-    // ============================
-    let cachedClients = [];
-    async function loadClients() {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      if (!sessionData.session) return showAlert("Login required", "Please login first.");
-
-      const { data, error } = await supabaseClient
-        .from('clients_view')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) return showAlert("Load failed", error.message);
-
-      cachedClients = data || [];
-      renderClients();
-      populateClientDropdown();
-      showAlert("Loaded", `Loaded ${cachedClients.length} clients from clients_view.`);
-    }
-
-    function passesFilter(row) {
-      const t = document.getElementById('filterClientType').value.trim().toLowerCase();
-      const c = document.getElementById('filterCountry').value.trim().toLowerCase();
-      const s = document.getElementById('filterState').value.trim().toLowerCase();
-      const tr = document.getElementById('filterTrailer').value.trim().toLowerCase();
-
-      if (t && (row.client_type || '').toLowerCase() !== t) return false;
-      if (c && !(row.country || '').toLowerCase().includes(c)) return false;
-      if (s && !(row.state_province || '').toLowerCase().includes(s)) return false;
-      if (tr && !(row.preferred_trailer_type || '').toLowerCase().includes(tr)) return false;
-      return true;
-    }
-
-    ['filterClientType','filterCountry','filterState','filterTrailer'].forEach(id => {
-      document.getElementById(id).addEventListener('input', renderClients);
-      document.getElementById(id).addEventListener('change', renderClients);
-    });
-
-    function renderClients() {
-      const tbody = document.getElementById('clientsTbody');
-      const rows = cachedClients.filter(passesFilter);
-
-      tbody.innerHTML = rows.map(r => {
-        const created = r.created_at ? new Date(r.created_at).toLocaleString() : '';
-        return `
-          <tr class="border-b">
-            <td class="py-2 pr-4">${escapeHtml(r.client_type || '')}</td>
-            <td class="py-2 pr-4 font-semibold">${escapeHtml(r.company_name || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.contact_name || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.phone || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.email || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.city || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.state_province || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.country || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(r.preferred_trailer_type || '')}</td>
-            <td class="py-2 pr-4">${escapeHtml(created)}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function populateClientDropdown() {
-      const sel = document.getElementById('clientSelect');
-      if (!cachedClients.length) return;
-
-      sel.innerHTML = `<option value="">Select a client...</option>` + cachedClients.slice(0, 500).map(r => {
-        // IMPORTANT: clients_view currently returns a single id for each row.
-        // We store client_type + that id and later map to shipper_id or receiver_id.
-        const value = JSON.stringify({ client_type: r.client_type, client_id: r.id, company_name: r.company_name || '' });
-        const label = `${r.company_name || '(No name)'} — ${r.client_type}`;
-        return `<option value='${escapeAttr(value)}'>${escapeHtml(label)}</option>`;
-      }).join('');
-    }
-
-    // ============================
-    // 6) CONTACT TRACKING
-    // ============================
-    let lastInsertedContactId = null;
-
-    function getSelectedMethods() {
-      const checked = Array.from(document.querySelectorAll('.cm')).filter(x => x.checked).map(x => x.value);
-      return checked.join(', ');
-    }
-
-    async function saveContact() {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const user = sessionData.session?.user;
-      if (!user) return showAlert("Login required", "Please login first.");
-
-      const selValue = document.getElementById('clientSelect').value;
-      if (!selValue) return showAlert("Missing client", "Please select a client.");
-
-      const methods = getSelectedMethods();
-      const remarks = document.getElementById('remarks').value.trim();
-
-      if (!methods) return showAlert("Missing contact method", "Select at least one contact method.");
-      if (!remarks) return showAlert("Missing remarks", "Please enter remarks.");
-
-      const client = JSON.parse(selValue);
-      const payload = {
-        client_type: client.client_type,
-        client_company_name: client.company_name || null,
-        shipper_id: client.client_type === 'shipper' ? client.client_id : null,
-        receiver_id: client.client_type === 'receiver' ? client.client_id : null,
-        contact_methods: methods,
-        remarks: remarks,
-        // followup_status default is 'open' in DB; we can omit it here
-        employee_name: user.email,
-        employee_id: user.id
-      };
-
-      const { data, error } = await supabaseClient
-        .from('contact_tracking')
-        .insert(payload)
-        .select('id')
-        .single();
-
-      if (error) return showAlert("Save failed (Contact)", error.message);
-
-      lastInsertedContactId = data?.id ?? null;
-
-      // Reset
-      document.getElementById('remarks').value = '';
-      document.querySelectorAll('.cm').forEach(x => x.checked = false);
-
-      showAlert("Saved", `Contact recorded. (contact_tracking.id = ${lastInsertedContactId})`);
-      await loadContactHistory();
-    }
-
-    async function loadContactHistory() {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      if (!sessionData.session) return showAlert("Login required", "Please login first.");
-
-      const { data, error } = await supabaseClient
-        .from('contact_tracking')
-        .select('id, created_at, client_type, client_company_name, contact_methods, remarks, followup_status, load_id')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) return showAlert("Load failed (History)", error.message);
-
-      const container = document.getElementById('contactHistory');
-      container.innerHTML = (data || []).map(r => {
-        const d = r.created_at ? new Date(r.created_at).toLocaleString() : '';
-        return `
-          <div class="card p-3 bg-white">
-            <div class="flex items-center justify-between gap-2">
-              <div class="font-bold">#${r.id} <span class="pill ml-2">${escapeHtml(r.client_type || '')}</span></div>
-              <div class="text-xs muted">${escapeHtml(d)}</div>
-            </div>
-            <div class="text-sm mt-1"><b>${escapeHtml(r.client_company_name || '')}</b></div>
-            <div class="text-xs muted mt-1">Methods: ${escapeHtml(r.contact_methods || '')} • Status: ${escapeHtml(r.followup_status || '')} • Load: ${r.load_id ?? '—'}</div>
-            <div class="text-sm mt-2">${escapeHtml(r.remarks || '')}</div>
-          </div>
-        `;
-      }).join('') || `<div class="text-sm muted">No history found.</div>`;
-    }
-
-    // ============================
-    // 7) LOAD ASSIGNMENT + PDF UPLOAD
-    // ============================
-    function openLoadAssignModal() {
-      if (!lastInsertedContactId) {
-        // You can still assign load without a contact, but linking is ideal.
-        showAlert("Note", "Record a Contact first so we can link the load to that follow-up. You can still proceed, but linking is recommended.");
-      }
-      openModal('loadModal');
-      document.getElementById('loadModalStatus').textContent = '';
-      document.getElementById('loadRef').value = '';
-      document.getElementById('bolFile').value = '';
-    }
-
-    async function assignLoadAndUpload() {
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      const user = sessionData.session?.user;
-      if (!user) return showAlert("Login required", "Please login first.");
-
-      const selValue = document.getElementById('clientSelect').value;
-      if (!selValue) return showAlert("Missing client", "Please select a client first.");
-
-      const client = JSON.parse(selValue);
-      const loadRef = document.getElementById('loadRef').value.trim();
-      const fileInput = document.getElementById('bolFile');
-      const file = fileInput.files?.[0];
-
-      if (!loadRef) return showAlert("Missing Load Reference", "Enter the load reference number (BOL).");
-      if (!file) return showAlert("Missing PDF", "Please choose a PDF file to upload.");
-      if (file.type !== "application/pdf") return showAlert("Invalid file type", "Only PDF files are allowed.");
-
-      const statusEl = document.getElementById('loadModalStatus');
-      statusEl.textContent = "Creating load record…";
-
-      // Phase 1: create load row (without bol_pdf_path yet)
-      const loadPayload = {
-        load_reference_number: loadRef,
-        client_type: client.client_type,
-        shipper_id: client.client_type === 'shipper' ? client.client_id : null,
-        receiver_id: client.client_type === 'receiver' ? client.client_id : null,
-        status: "assigned",
-        bol_pdf_uploaded_by: user.email
-      };
-
-      const { data: loadRow, error: loadErr } = await supabaseClient
-        .from('loads')
-        .insert(loadPayload)
-        .select('id')
-        .single();
-
-      if (loadErr) return showAlert("Load create failed", loadErr.message);
-
-      const loadId = loadRow.id;
-
-      // Phase 2: upload PDF to Storage
-      statusEl.textContent = "Uploading PDF to storage…";
-
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-
-      const safeLoadRef = loadRef.replace(/[^a-zA-Z0-9_-]/g, '_');
-      const storagePath = `bol/${yyyy}/${mm}/${safeLoadRef}.pdf`;
-
-      const { error: upErr } = await supabaseClient
-        .storage
-        .from('load-documents')
-        .upload(storagePath, file, { upsert: true, contentType: "application/pdf" });
-
-      if (upErr) return showAlert("PDF upload failed", upErr.message);
-
-      // Phase 3: update loads row with bol_pdf_path + filename
-      statusEl.textContent = "Saving PDF path to database…";
-
-      const { error: updErr } = await supabaseClient
-        .from('loads')
-        .update({
-          bol_pdf_path: storagePath,
-          bol_pdf_filename: file.name,
-          bol_pdf_uploaded_at: new Date().toISOString()
-        })
-        .eq('id', loadId);
-
-      if (updErr) return showAlert("Load update failed", updErr.message);
-
-      // Phase 4: link to last contact (optional but recommended)
-      if (lastInsertedContactId) {
-        statusEl.textContent = "Linking load to last contact…";
-        const { error: linkErr } = await supabaseClient
-          .from('contact_tracking')
-          .update({ load_id: loadId })
-          .eq('id', lastInsertedContactId);
-
-        if (linkErr) return showAlert("Contact link failed", linkErr.message);
-      }
-
-      statusEl.textContent = "Done.";
-      closeModal('loadModal');
-      showAlert("Success", `Load created (id=${loadId}), PDF uploaded, and linked to last contact.`);
-      await loadContactHistory();
-    }
-
-    // ============================
-    // 8) HTML ESCAPING
-    // ============================
-    function escapeHtml(str) {
-      return (str ?? '').toString()
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-    function escapeAttr(str) {
-      // For JSON in option value
-      return escapeHtml(str).replaceAll('\n', ' ');
-    }
-
-    // Optional: load contact history on first view if logged in
-    setTimeout(async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      if (data.session?.user) {
-        await loadContactHistory();
-      }
-    }, 600);
-  </script>
-</body>
+        // Google Sheets Integration
+        const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // Replace with your Google Apps Script URL
+        const CLIENT_SCRIPT_URL = "PASTE_YOUR_CLIENT_REGISTRATION_URL_HERE"; // Replace with your Client Registration Google Apps Script URL
+        const CLIENT_READ_URL = "PASTE_YOUR_CLIENT_READ_URL_HERE"; // Replace with your Google Apps Script URL for reading client data
+        const CONTACT_TRACKING_URL = "PASTE_YOUR_CONTACT_TRACKING_URL_HERE"; // Replace with your Contact Tracking Google Apps Script URL
+        const CONTACT_READ_URL = "PASTE_YOUR_CONTACT_READ_URL_HERE"; // Replace with your Google Apps Script URL for reading contact history
+        const RATE_CONFIRMATION_UPLOAD_URL = "PASTE_YOUR_RATE_CONFIRMATION_UPLOAD_URL_HERE"; // Replace with your Rate Confirmation Upload Google Apps Script URL
+        const PICKUP_INSTRUCTIONS_EMAIL_URL = "PASTE_YOUR_PICKUP_INSTRUCTIONS_EMAIL_URL_HERE"; // Replace with your Pickup Instructions Email Google Apps Script URL
+
+        // USA States
+        const USA_STATES = [
+            'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
+            'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
+            'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
+            'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico',
+            'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+            'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+            'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
+        ];
+
+        // Canadian Provinces
+        const CANADA_PROVINCES = [
+            'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
+            'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
+            'Quebec', 'Saskatchewan', 'Yukon'
+        ];
+
+        // Global variable to store all client data
+        let allClientData = [];
+        
+        // Employee credentials (in production, this should be validated server-side)
+        const EMPLOYEE_CREDENTIALS = {
+            "john.smith@rklogixhub.com": { password: "pass123", name: "John Smith", id: "EMP001" },
+            "sarah.johnson@rklogixhub.com": { password: "pass456", name: "Sarah Johnson", id: "EMP002" },
+            "mike.davis@rklogixhub.com": { password: "pass789", name: "Mike Davis", id: "EMP003" }
+        };
+
+        let currentEmployee = null;
+
+        // Update shipper region dropdown based on country selection
+        function updateShipperRegions() {
+            const country = document.getElementById('shipperCountry').value;
+            const regionSelect = document.getElementById('shipperRegion');
+            
+            regionSelect.innerHTML = '<option value="">Select State/Province</option>';
+            
+            if (country === 'USA') {
+                USA_STATES.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    regionSelect.appendChild(option);
+                });
+            } else if (country === 'Canada') {
+                CANADA_PROVINCES.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province;
+                    option.textContent = province;
+                    regionSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update receiver region dropdown based on country selection
+        function updateReceiverRegions() {
+            const country = document.getElementById('receiverCountry').value;
+            const regionSelect = document.getElementById('receiverRegion');
+            
+            regionSelect.innerHTML = '<option value="">Select State/Province</option>';
+            
+            if (country === 'USA') {
+                USA_STATES.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    regionSelect.appendChild(option);
+                });
+            } else if (country === 'Canada') {
+                CANADA_PROVINCES.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province;
+                    option.textContent = province;
+                    regionSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Update filter region dropdown based on country selection
+        function updateFilterRegions() {
+            const country = document.getElementById('filterCountry').value;
+            const regionSelect = document.getElementById('filterRegion');
+            
+            regionSelect.innerHTML = '<option value="all">All States/Provinces</option>';
+            
+            if (country === 'USA') {
+                USA_STATES.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    regionSelect.appendChild(option);
+                });
+            } else if (country === 'Canada') {
+                CANADA_PROVINCES.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province;
+                    option.textContent = province;
+                    regionSelect.appendChild(option);
+                });
+            }
+            
+            applyFilters();
+        }
+
+        // Apply filters to client data
+        function applyFilters() {
+            if (allClientData.length === 0) {
+                return;
+            }
+
+            const clientType = document.getElementById('filterClientType').value;
+            const country = document.getElementById('filterCountry').value;
+            const region = document.getElementById('filterRegion').value;
+            const trailerType = document.getElementById('filterTrailerType').value;
+
+            let filteredData = allClientData;
+
+            // Filter by country, region, and trailer type
+            if (country !== 'all' || region !== 'all' || trailerType !== 'all') {
+                filteredData = allClientData.filter(client => {
+                    let matchesFilter = false;
+
+                    // Check shipper if we're looking at all or shipper-only
+                    if (clientType === 'all' || clientType === 'shipper') {
+                        const shipperCountryMatch = country === 'all' || client.shipperCountry === country;
+                        const shipperRegionMatch = region === 'all' || client.shipperRegion === region;
+                        const shipperTrailerMatch = trailerType === 'all' || client.shipperTrailerType === trailerType;
+                        if (shipperCountryMatch && shipperRegionMatch && shipperTrailerMatch) {
+                            matchesFilter = true;
+                        }
+                    }
+
+                    // Check receiver if we're looking at all or receiver-only
+                    if (clientType === 'all' || clientType === 'receiver') {
+                        const receiverCountryMatch = country === 'all' || client.receiverCountry === country;
+                        const receiverRegionMatch = region === 'all' || client.receiverRegion === region;
+                        const receiverTrailerMatch = trailerType === 'all' || client.receiverTrailerType === trailerType;
+                        if (receiverCountryMatch && receiverRegionMatch && receiverTrailerMatch) {
+                            matchesFilter = true;
+                        }
+                    }
+
+                    return matchesFilter;
+                });
+            }
+
+            displayClientData(filteredData);
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('filterClientType').value = 'all';
+            document.getElementById('filterCountry').value = 'all';
+            document.getElementById('filterRegion').innerHTML = '<option value="all">All States/Provinces</option>';
+            document.getElementById('filterRegion').value = 'all';
+            document.getElementById('filterTrailerType').value = 'all';
+            
+            if (allClientData.length > 0) {
+                displayClientData(allClientData);
+            }
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+                // Close mobile menu if open
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Modal functions
+        function showRegister() {
+            document.getElementById('registerModal').classList.remove('hidden');
+        }
+
+        function showEmployeeLogin() {
+            document.getElementById('employeeLoginModal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Employee login handler
+        function handleEmployeeLogin(event) {
+            event.preventDefault();
+            
+            const employeeEmail = event.target.employeeEmail.value.trim().toLowerCase();
+            const password = event.target.password.value.trim();
+
+            // Remove any existing error messages
+            const existingError = document.getElementById('loginError');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Validate credentials
+            if (EMPLOYEE_CREDENTIALS[employeeEmail] && EMPLOYEE_CREDENTIALS[employeeEmail].password === password) {
+                currentEmployee = {
+                    id: EMPLOYEE_CREDENTIALS[employeeEmail].id,
+                    email: employeeEmail,
+                    name: EMPLOYEE_CREDENTIALS[employeeEmail].name
+                };
+
+                // Close login modal and show dashboard
+                closeModal('employeeLoginModal');
+                document.getElementById('employeeName').textContent = currentEmployee.name;
+                document.getElementById('employeeDashboard').classList.remove('hidden');
+                
+                // Reset login form
+                event.target.reset();
+            } else {
+                // Show detailed error message
+                const errorMsg = document.createElement('div');
+                errorMsg.id = 'loginError';
+                errorMsg.className = 'mt-4 p-3 bg-red-100 text-red-700 rounded-md text-sm';
+                
+                if (!EMPLOYEE_CREDENTIALS[employeeEmail]) {
+                    errorMsg.innerHTML = `<strong>Invalid Email</strong><br>Email not found in system. Please check your email address.`;
+                } else if (EMPLOYEE_CREDENTIALS[employeeEmail].password !== password) {
+                    errorMsg.innerHTML = `<strong>Invalid Password</strong><br>The password you entered is incorrect.`;
+                } else {
+                    errorMsg.innerHTML = `<strong>Login Failed</strong><br>Please check your credentials and try again.`;
+                }
+                
+                event.target.appendChild(errorMsg);
+
+                setTimeout(() => {
+                    if (errorMsg && errorMsg.parentElement) errorMsg.remove();
+                }, 5000);
+            }
+        }
+
+        // Employee logout
+        function employeeLogout() {
+            currentEmployee = null;
+            closeModal('employeeDashboard');
+            document.getElementById('clientRegistrationForm').reset();
+        }
+
+        // Form handlers with Google Sheets integration
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            // Build the form payload
+            const fd = new FormData(event.target);
+
+            // Send to Apps Script without CORS checks
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: fd,
+                    mode: "no-cors"   // key part to avoid CORS block
+                });
+
+                // Show success message
+                const modal = document.getElementById('registerModal');
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                        <p class="text-gray-600 mb-4">Welcome to RK LOGIX HUB! We'll contact you soon.</p>
+                        <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
+                            Continue
+                        </button>
+                    </div>
+                `;
+                
+                // Reset the form
+                event.target.reset();
+            } catch (err) {
+                console.error(err);
+                // Show error message
+                const modal = document.getElementById('registerModal');
+                modal.innerHTML = `
+                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Error</h3>
+                        <p class="text-gray-600 mb-4">There was an error submitting the form. Please try again.</p>
+                        <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Scroll animations
+        function handleScrollAnimations() {
+            const sections = document.querySelectorAll('.section-fade');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                if (isVisible) {
+                    section.classList.add('visible');
+                }
+            });
+        }
+
+        // Initialize scroll animations
+        window.addEventListener('scroll', handleScrollAnimations);
+        window.addEventListener('load', handleScrollAnimations);
+
+        // Client registration handler (for employees)
+        async function handleClientRegistration(event) {
+            event.preventDefault();
+
+            if (!currentEmployee) {
+                return;
+            }
+
+            // Build the form payload with employee info
+            const fd = new FormData(event.target);
+            fd.append('registeredBy', currentEmployee.id);
+            fd.append('registeredByName', currentEmployee.name);
+            fd.append('registrationDate', new Date().toISOString());
+
+            try {
+                // Send to Client Registration Google Sheet
+                await fetch(CLIENT_SCRIPT_URL, {
+                    method: "POST",
+                    body: fd,
+                    mode: "no-cors"
+                });
+
+                // Show success message overlay
+                const successOverlay = document.createElement('div');
+                successOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center';
+                successOverlay.innerHTML = `
+                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center shadow-2xl">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Client Registered Successfully!</h3>
+                        <p class="text-gray-600 mb-6">All client information has been saved to the system.</p>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-md font-semibold transition-colors">
+                            Continue
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(successOverlay);
+                
+                // Reset form
+                event.target.reset();
+
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (successOverlay.parentElement) {
+                        successOverlay.remove();
+                    }
+                }, 5000);
+
+            } catch (err) {
+                console.error(err);
+                
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-4 p-4 bg-red-100 text-red-700 rounded-md text-center';
+                errorMsg.innerHTML = `
+                    <div class="font-bold mb-2">✗ Registration Error</div>
+                    <p class="text-sm">There was an error saving the client. Please try again.</p>
+                `;
+                
+                event.target.insertAdjacentElement('afterend', errorMsg);
+                
+                setTimeout(() => {
+                    errorMsg.remove();
+                }, 3000);
+            }
+        }
+
+        // Tab switching function
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Reset all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('border-black', 'text-black');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            if (tabName === 'register') {
+                document.getElementById('registerTabContent').classList.remove('hidden');
+                document.getElementById('registerTab').classList.add('border-black', 'text-black');
+                document.getElementById('registerTab').classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'viewData') {
+                document.getElementById('viewDataTabContent').classList.remove('hidden');
+                document.getElementById('viewDataTab').classList.add('border-black', 'text-black');
+                document.getElementById('viewDataTab').classList.remove('border-transparent', 'text-gray-500');
+            } else if (tabName === 'contactTracking') {
+                document.getElementById('contactTrackingTabContent').classList.remove('hidden');
+                document.getElementById('contactTrackingTab').classList.add('border-black', 'text-black');
+                document.getElementById('contactTrackingTab').classList.remove('border-transparent', 'text-gray-500');
+            }
+        }
+
+        // Display client data function (separated from loading)
+        function displayClientData(data) {
+            const dataContainer = document.getElementById('dataContainer');
+            
+            if (data && data.length > 0) {
+                    // Create table
+                    let tableHTML = `
+                        <table class="min-w-full bg-white border border-gray-300">
+                            <thead class="bg-gray-800 text-white">
+                                <tr>
+                                    <th class="py-3 px-4 border-b text-left">Date</th>
+                                    <th class="py-3 px-4 border-b text-left">Shipper Company</th>
+                                    <th class="py-3 px-4 border-b text-left">Shipper Location</th>
+                                    <th class="py-3 px-4 border-b text-left">Shipper Trailer</th>
+                                    <th class="py-3 px-4 border-b text-left">Receiver Company</th>
+                                    <th class="py-3 px-4 border-b text-left">Receiver Location</th>
+                                    <th class="py-3 px-4 border-b text-left">Receiver Trailer</th>
+                                    <th class="py-3 px-4 border-b text-left">Registered By</th>
+                                    <th class="py-3 px-4 border-b text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.forEach((row, index) => {
+                        const regDate = row.registrationDate ? new Date(row.registrationDate).toLocaleDateString() : 'N/A';
+                        const shipperLocation = `${row.shipperCity || ''}, ${row.shipperRegion || ''}, ${row.shipperCountry || ''}`;
+                        const receiverLocation = `${row.receiverCity || ''}, ${row.receiverRegion || ''}, ${row.receiverCountry || ''}`;
+                        
+                        tableHTML += `
+                            <tr class="hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
+                                <td class="py-3 px-4 border-b text-sm">${regDate}</td>
+                                <td class="py-3 px-4 border-b text-sm font-semibold">${row.shipperCompanyName || 'N/A'}<br>
+                                    <span class="text-gray-600 text-xs">${row.shipperContactName || ''}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm">
+                                    <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold mb-1">${row.shipperRegion || 'N/A'}</span><br>
+                                    <span class="text-gray-600 text-xs">${row.shipperCity || 'N/A'}, ${row.shipperCountry || 'N/A'}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm">
+                                    <span class="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-semibold">${row.shipperTrailerType || 'N/A'}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm font-semibold">${row.receiverCompanyName || 'N/A'}<br>
+                                    <span class="text-gray-600 text-xs">${row.receiverContactName || ''}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm">
+                                    <span class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold mb-1">${row.receiverRegion || 'N/A'}</span><br>
+                                    <span class="text-gray-600 text-xs">${row.receiverCity || 'N/A'}, ${row.receiverCountry || 'N/A'}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm">
+                                    <span class="inline-block px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-semibold">${row.receiverTrailerType || 'N/A'}</span>
+                                </td>
+                                <td class="py-3 px-4 border-b text-sm">${row.registeredByName || 'N/A'}</td>
+                                <td class="py-3 px-4 border-b text-center">
+                                    <button onclick='viewClientDetails(${JSON.stringify(row).replace(/'/g, "&apos;")})' class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += `
+                            </tbody>
+                        </table>
+                        <div class="mt-4 text-sm text-gray-600 text-center">
+                            Total Records: ${data.length}
+                        </div>
+                    `;
+                    
+                    dataContainer.innerHTML = tableHTML;
+                } else {
+                    dataContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No client data found</p>';
+                }
+        }
+
+        // Load client data from Google Sheets
+        async function loadClientData() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const dataContainer = document.getElementById('dataContainer');
+            
+            // Show loading
+            loadingMessage.classList.remove('hidden');
+            dataContainer.innerHTML = '';
+            
+            try {
+                // Fetch data from Google Sheets
+                const response = await fetch(CLIENT_READ_URL);
+                const data = await response.json();
+                
+                // Hide loading
+                loadingMessage.classList.add('hidden');
+                
+                // Store data globally
+                allClientData = data;
+                
+                // Display all data initially
+                displayClientData(data);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                loadingMessage.classList.add('hidden');
+                dataContainer.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-red-600 font-semibold mb-2">Error Loading Data</div>
+                        <p class="text-gray-600 text-sm">Please make sure your CLIENT_READ_URL is configured correctly.</p>
+                        <p class="text-gray-500 text-xs mt-2">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // View client details in a modal
+        function viewClientDetails(client) {
+            const detailsModal = document.createElement('div');
+            detailsModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center p-4';
+            detailsModal.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-4xl w-full max-h-screen overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900">Client Details</h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Shipper Information -->
+                        <div class="p-6 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                </svg>
+                                Shipper Information
+                            </h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Company Name</p>
+                                    <p class="text-sm font-semibold">${client.shipperCompanyName || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Contact Person</p>
+                                    <p class="text-sm">${client.shipperContactName || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Phone</p>
+                                    <p class="text-sm">${client.shipperPhone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Email</p>
+                                    <p class="text-sm">${client.shipperEmail || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Full Address</p>
+                                    <p class="text-sm">${client.shipperStreetAddress || 'N/A'}</p>
+                                    <p class="text-sm">${client.shipperCity || 'N/A'}, ${client.shipperRegion || 'N/A'} ${client.shipperZipCode || ''}</p>
+                                    <p class="text-sm font-semibold">${client.shipperCountry || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Website</p>
+                                    <p class="text-sm">${client.shipperWebsite || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Load Description</p>
+                                    <p class="text-sm">${client.shipperLoad || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Trailer Type</p>
+                                    <p class="text-sm"><span class="inline-block px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-semibold">${client.shipperTrailerType || 'N/A'}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Receiver Information -->
+                        <div class="p-6 bg-green-50 rounded-lg border border-green-200">
+                            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                </svg>
+                                Receiver Information
+                            </h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Company Name</p>
+                                    <p class="text-sm font-semibold">${client.receiverCompanyName || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Contact Person</p>
+                                    <p class="text-sm">${client.receiverContactName || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Phone</p>
+                                    <p class="text-sm">${client.receiverPhone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Email</p>
+                                    <p class="text-sm">${client.receiverEmail || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Full Address</p>
+                                    <p class="text-sm">${client.receiverStreetAddress || 'N/A'}</p>
+                                    <p class="text-sm">${client.receiverCity || 'N/A'}, ${client.receiverRegion || 'N/A'} ${client.receiverZipCode || ''}</p>
+                                    <p class="text-sm font-semibold">${client.receiverCountry || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Website</p>
+                                    <p class="text-sm">${client.receiverWebsite || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Load Description</p>
+                                    <p class="text-sm">${client.receiverLoad || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-600 font-semibold">Trailer Type</p>
+                                    <p class="text-sm"><span class="inline-block px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-semibold">${client.receiverTrailerType || 'N/A'}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Information -->
+                    <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+                        <h4 class="text-md font-bold text-gray-900 mb-3">Additional Information</h4>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <p class="text-xs text-gray-600 font-semibold">Registration Date</p>
+                                <p>${client.registrationDate ? new Date(client.registrationDate).toLocaleString() : 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-600 font-semibold">Registered By</p>
+                                <p>${client.registeredByName || 'N/A'} (${client.registeredBy || 'N/A'})</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-600 font-semibold">Notes</p>
+                                <p>${client.notes || 'No additional notes'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <button onclick="this.closest('.fixed').remove()" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(detailsModal);
+        }
+
+        // Contact tracking handler
+        async function handleContactTracking(event) {
+            event.preventDefault();
+
+            if (!currentEmployee) {
+                return;
+            }
+
+            // Get selected contact methods
+            const checkboxes = document.querySelectorAll('input[name="contactMethod"]:checked');
+            if (checkboxes.length === 0) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-4 p-4 bg-yellow-100 text-yellow-700 rounded-md text-center';
+                errorMsg.innerHTML = `
+                    <div class="font-bold mb-2">⚠ No Contact Method Selected</div>
+                    <p class="text-sm">Please select at least one contact method.</p>
+                `;
+                event.target.insertAdjacentElement('beforebegin', errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+                return;
+            }
+
+            const contactMethods = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            // Build the form payload
+            const fd = new FormData(event.target);
+            fd.append('contactMethods', contactMethods);
+            fd.append('contactDate', new Date().toISOString());
+            fd.append('employeeId', currentEmployee.id);
+            fd.append('employeeName', currentEmployee.name);
+
+            try {
+                // Send to Contact Tracking Google Sheet
+                await fetch(CONTACT_TRACKING_URL, {
+                    method: "POST",
+                    body: fd,
+                    mode: "no-cors"
+                });
+
+                // Show success message
+                const successOverlay = document.createElement('div');
+                successOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-60 flex items-center justify-center';
+                successOverlay.innerHTML = `
+                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center shadow-2xl">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Contact Recorded Successfully!</h3>
+                        <p class="text-gray-600 mb-6">Contact information has been saved to the system.</p>
+                        <button onclick="this.closest('.fixed').remove()" class="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-md font-semibold transition-colors">
+                            Continue
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(successOverlay);
+                
+                // Reset form
+                event.target.reset();
+
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (successOverlay.parentElement) {
+                        successOverlay.remove();
+                    }
+                }, 5000);
+
+            } catch (err) {
+                console.error(err);
+                
+                // Show error message
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-4 p-4 bg-red-100 text-red-700 rounded-md text-center';
+                errorMsg.innerHTML = `
+                    <div class="font-bold mb-2">✗ Recording Error</div>
+                    <p class="text-sm">There was an error saving the contact. Please try again.</p>
+                `;
+                
+                event.target.insertAdjacentElement('afterend', errorMsg);
+                
+                setTimeout(() => {
+                    errorMsg.remove();
+                }, 3000);
+            }
+        }
+
+        // Load contact history
+        async function loadContactHistory() {
+            const loadingElement = document.getElementById('contactHistoryLoading');
+            const container = document.getElementById('contactHistoryContainer');
+            
+            // Show loading
+            loadingElement.classList.remove('hidden');
+            container.innerHTML = '';
+            
+            try {
+                // Fetch data from Google Sheets
+                const response = await fetch(CONTACT_READ_URL);
+                const data = await response.json();
+                
+                // Hide loading
+                loadingElement.classList.add('hidden');
+                
+                if (data && data.length > 0) {
+                    // Sort by date (newest first)
+                    data.sort((a, b) => new Date(b.contactDate) - new Date(a.contactDate));
+                    
+                    // Create timeline view
+                    let historyHTML = '<div class="space-y-4">';
+                    
+                    data.forEach((contact, index) => {
+                        const contactDate = contact.contactDate ? new Date(contact.contactDate).toLocaleString() : 'N/A';
+                        const methods = contact.contactMethods || 'N/A';
+                        const methodsArray = methods.split(',').map(m => m.trim());
+                        
+                        // Method icons
+                        const methodIcons = {
+                            'EMAIL': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+                            'PHONE CALL': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>',
+                            'SOCIAL MEDIA': '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>',
+                            'WHATSAPP': '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/></svg>'
+                        };
+                        
+                        let methodBadges = '';
+                        methodsArray.forEach(method => {
+                            const icon = methodIcons[method] || '';
+                            methodBadges += `
+                                <span class="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                    ${icon}
+                                    <span>${method}</span>
+                                </span>
+                            `;
+                        });
+                        
+                        historyHTML += `
+                            <div class="p-4 bg-white border border-gray-300 rounded-lg hover:shadow-md transition-shadow">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h5 class="text-lg font-bold text-gray-900">${contact.clientCompany || 'N/A'}</h5>
+                                        <p class="text-sm text-gray-600">${contact.clientType || 'N/A'}</p>
+                                    </div>
+                                    <span class="text-xs text-gray-500">${contactDate}</span>
+                                </div>
+                                
+                                <div class="mb-2 flex flex-wrap gap-2">
+                                    ${methodBadges}
+                                </div>
+                                
+                                <div class="mb-2 p-3 bg-gray-50 rounded-md">
+                                    <p class="text-sm font-semibold text-gray-700 mb-1">Remarks:</p>
+                                    <p class="text-sm text-gray-600">${contact.remarks || 'No remarks'}</p>
+                                </div>
+                                
+                                <div class="text-xs text-gray-500">
+                                    Contacted by: <span class="font-semibold">${contact.employeeName || 'N/A'}</span> (${contact.employeeId || 'N/A'})
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    historyHTML += '</div>';
+                    historyHTML += `<div class="mt-4 text-sm text-gray-600 text-center">Total Contacts: ${data.length}</div>`;
+                    
+                    container.innerHTML = historyHTML;
+                } else {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-8">No contact history found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading contact history:', error);
+                loadingElement.classList.add('hidden');
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-red-600 font-semibold mb-2">Error Loading History</div>
+                        <p class="text-gray-600 text-sm">Please make sure your CONTACT_READ_URL is configured correctly.</p>
+                        <p class="text-gray-500 text-xs mt-2">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Assignment Modal Functions
+        let currentLoadId = '';
+
+        function showLoadAssignmentModal() {
+            document.getElementById('loadAssignmentModal').classList.remove('hidden');
+            // Reset to step 1
+            document.getElementById('step1Upload').classList.remove('hidden');
+            document.getElementById('step2Confirm').classList.add('hidden');
+            document.getElementById('step3Instructions').classList.add('hidden');
+            document.getElementById('step4Success').classList.add('hidden');
+            document.getElementById('rateConfirmationForm').reset();
+        }
+
+        function closeLoadAssignmentModal() {
+            document.getElementById('loadAssignmentModal').classList.add('hidden');
+            currentLoadId = '';
+        }
+
+        // Handle Rate Confirmation Upload
+        async function handleRateConfirmationUpload(event) {
+            event.preventDefault();
+            
+            const uploadButton = document.getElementById('uploadButton');
+            const originalButtonText = uploadButton.innerHTML;
+            
+            // Show loading state
+            uploadButton.disabled = true;
+            uploadButton.innerHTML = `
+                <div class="flex items-center justify-center">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Uploading...
+                </div>
+            `;
+
+            try {
+                const formData = new FormData(event.target);
+                const loadId = formData.get('loadId');
+                const pdfFile = formData.get('rateConfirmationPdf');
+                
+                // Store load ID
+                currentLoadId = loadId;
+                
+                // Add employee info and timestamp
+                formData.append('uploadedBy', currentEmployee.id);
+                formData.append('uploadedByName', currentEmployee.name);
+                formData.append('uploadDate', new Date().toISOString());
+                
+                // Convert PDF to base64 for Google Apps Script
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64Data = e.target.result.split(',')[1];
+                    const fileName = pdfFile.name;
+                    
+                    // Create new FormData with base64
+                    const uploadData = new FormData();
+                    uploadData.append('loadId', loadId);
+                    uploadData.append('pdfData', base64Data);
+                    uploadData.append('fileName', fileName);
+                    uploadData.append('uploadedBy', currentEmployee.id);
+                    uploadData.append('uploadedByName', currentEmployee.name);
+                    uploadData.append('uploadDate', new Date().toISOString());
+                    
+                    // Send to Google Apps Script
+                    await fetch(RATE_CONFIRMATION_UPLOAD_URL, {
+                        method: "POST",
+                        body: uploadData,
+                        mode: "no-cors"
+                    });
+                    
+                    // Move to step 2
+                    uploadButton.disabled = false;
+                    uploadButton.innerHTML = originalButtonText;
+                    document.getElementById('step1Upload').classList.add('hidden');
+                    document.getElementById('step2Confirm').classList.remove('hidden');
+                    document.getElementById('confirmedLoadId').textContent = loadId;
+                };
+                
+                reader.readAsDataURL(pdfFile);
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                uploadButton.disabled = false;
+                uploadButton.innerHTML = originalButtonText;
+                
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-4 p-4 bg-red-100 text-red-700 rounded-md text-center';
+                errorMsg.innerHTML = `
+                    <div class="font-bold mb-2">✗ Upload Error</div>
+                    <p class="text-sm">There was an error uploading the document. Please try again.</p>
+                `;
+                event.target.insertAdjacentElement('afterend', errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+            }
+        }
+
+        // Confirm Load Button
+        function confirmLoad() {
+            // Move to step 3
+            document.getElementById('step2Confirm').classList.add('hidden');
+            document.getElementById('step3Instructions').classList.remove('hidden');
+        }
+
+        // Handle Pickup Instructions and Send Email
+        async function handlePickupInstructions(event) {
+            event.preventDefault();
+            
+            const sendButton = document.getElementById('sendInstructionsButton');
+            const originalButtonText = sendButton.innerHTML;
+            
+            // Show loading state
+            sendButton.disabled = true;
+            sendButton.innerHTML = `
+                <div class="flex items-center justify-center">
+                    <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Sending Email...
+                </div>
+            `;
+
+            try {
+                const formData = new FormData(event.target);
+                
+                // Add load ID and employee info
+                formData.append('loadId', currentLoadId);
+                formData.append('sentBy', currentEmployee.id);
+                formData.append('sentByName', currentEmployee.name);
+                formData.append('sentDate', new Date().toISOString());
+                
+                // Send email via Google Apps Script
+                await fetch(PICKUP_INSTRUCTIONS_EMAIL_URL, {
+                    method: "POST",
+                    body: formData,
+                    mode: "no-cors"
+                });
+                
+                // Move to step 4 (success)
+                sendButton.disabled = false;
+                sendButton.innerHTML = originalButtonText;
+                document.getElementById('step3Instructions').classList.add('hidden');
+                document.getElementById('step4Success').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Email error:', error);
+                sendButton.disabled = false;
+                sendButton.innerHTML = originalButtonText;
+                
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'mt-4 p-4 bg-red-100 text-red-700 rounded-md text-center';
+                errorMsg.innerHTML = `
+                    <div class="font-bold mb-2">✗ Email Error</div>
+                    <p class="text-sm">There was an error sending the email. Please try again.</p>
+                `;
+                event.target.insertAdjacentElement('afterend', errorMsg);
+                setTimeout(() => errorMsg.remove(), 3000);
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const registerModal = document.getElementById('registerModal');
+            const employeeLoginModal = document.getElementById('employeeLoginModal');
+            const employeeDashboard = document.getElementById('employeeDashboard');
+            const loadAssignmentModal = document.getElementById('loadAssignmentModal');
+            
+            if (event.target === registerModal) {
+                closeModal('registerModal');
+            }
+            if (event.target === employeeLoginModal) {
+                closeModal('employeeLoginModal');
+            }
+            if (event.target === employeeDashboard) {
+                closeModal('employeeDashboard');
+            }
+            if (event.target === loadAssignmentModal) {
+                closeLoadAssignmentModal();
+            }
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c11d0d0044c8eb6',t:'MTc2ODk0NjEyMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
