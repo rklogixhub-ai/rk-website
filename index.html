@@ -791,39 +791,59 @@ console.log("Supabase ready:", !!supabaseClient);
 
         // Form handlers with Google Sheets integration
         async function handleRegister(event) {
-            event.preventDefault();
+  event.preventDefault();
 
-            // Build the form payload
-            const fd = new FormData(event.target);
+  try {
+    const form = event.target;
 
-            // Send to Apps Script without CORS checks
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    body: fd,
-                    mode: "no-cors"   // key part to avoid CORS block
-                });
+    const name = form.elements["name"]?.value?.trim();
+    const email = form.elements["email"]?.value?.trim().toLowerCase();
+    const phone = form.elements["phone"]?.value?.trim();
+    const role = form.elements["role"]?.value?.trim(); // Driver / Dispatcher
 
-                // Show success message
-                const modal = document.getElementById('registerModal');
-                modal.innerHTML = `
-                    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
-                        <p class="text-gray-600 mb-4">Welcome to RK LOGIX HUB! We'll contact you soon.</p>
-                        <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
-                            Continue
-                        </button>
-                    </div>
-                `;
-                
-                // Reset the form
-                event.target.reset();
-            } catch (err) {
+    if (!name || !email || !phone || !role) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("registrations")
+      .insert([{ name, email, phone, role }]);
+
+    if (error) {
+      console.error("Supabase insert error:", error);
+      alert("Registration failed: " + error.message);
+      return;
+    }
+
+    // Success UI (keep your modal UX)
+    const modal = document.getElementById("registerModal");
+    if (modal) {
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+          <p class="text-gray-600 mb-4">Welcome to RK LOGIX HUB! We'll contact you soon.</p>
+          <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
+            Continue
+          </button>
+        </div>
+      `;
+    } else {
+      alert("Registration submitted successfully!");
+    }
+
+    form.reset();
+  } catch (err) {
+    console.error("Registration error:", err);
+    alert("Something went wrong. Please try again.");
+  }
+}
+ catch (err) {
                 console.error(err);
                 // Show error message
                 const modal = document.getElementById('registerModal');
