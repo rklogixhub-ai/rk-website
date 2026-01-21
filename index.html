@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RK LOGIX HUB - Connecting Drivers &amp; Dispatchers</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
         .hero-bg {
             background: linear-gradient(135deg, #000000 0%, #1f1f1f 100%);
@@ -522,14 +523,16 @@
    </div>
   </footer>
   <script>
-        // Google Sheets Integration
-        const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE"; // Replace with your Google Apps Script URL
-        const CLIENT_SCRIPT_URL = "PASTE_YOUR_CLIENT_REGISTRATION_URL_HERE"; // Replace with your Client Registration Google Apps Script URL
-        const CLIENT_READ_URL = "PASTE_YOUR_CLIENT_READ_URL_HERE"; // Replace with your Google Apps Script URL for reading client data
-        const CONTACT_TRACKING_URL = "PASTE_YOUR_CONTACT_TRACKING_URL_HERE"; // Replace with your Contact Tracking Google Apps Script URL
-        const CONTACT_READ_URL = "PASTE_YOUR_CONTACT_READ_URL_HERE"; // Replace with your Google Apps Script URL for reading contact history
-        const RATE_CONFIRMATION_UPLOAD_URL = "PASTE_YOUR_RATE_CONFIRMATION_UPLOAD_URL_HERE"; // Replace with your Rate Confirmation Upload Google Apps Script URL
-        const PICKUP_INSTRUCTIONS_EMAIL_URL = "PASTE_YOUR_PICKUP_INSTRUCTIONS_EMAIL_URL_HERE"; // Replace with your Pickup Instructions Email Google Apps Script URL
+   const SUPABASE_URL = "https://gtwpndodljngyiyfpzcy.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_u-lCgvNcQ910xc_n3oVnlQ_4DVBrqm";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+console.log("Supabase ready:", !!supabaseClient);
+
 
         // USA States
         const USA_STATES = [
