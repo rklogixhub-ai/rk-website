@@ -552,13 +552,6 @@ console.log("Supabase ready:", !!supabaseClient);
 
         // Global variable to store all client data
         let allClientData = [];
-        
-        // Employee credentials (in production, this should be validated server-side)
-        const EMPLOYEE_CREDENTIALS = {
-            "john.smith@rklogixhub.com": { password: "pass123", name: "John Smith", id: "EMP001" },
-            "sarah.johnson@rklogixhub.com": { password: "pass456", name: "Sarah Johnson", id: "EMP002" },
-            "mike.davis@rklogixhub.com": { password: "pass789", name: "Mike Davis", id: "EMP003" }
-        };
 
         let currentEmployee = null;
 
@@ -737,7 +730,7 @@ async function handleEmployeeLogin(event) {
   const email = event.target.employeeEmail.value.trim().toLowerCase();
   const password = event.target.password.value;
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
   });
@@ -748,8 +741,14 @@ async function handleEmployeeLogin(event) {
     return;
   }
 
-  // Logged in successfully
-  document.getElementById("employeeName").textContent = data.user.email;
+  // ✅ Set currentEmployee so the rest of the CRM works
+  currentEmployee = {
+    id: data.user.id,
+    email: data.user.email,
+    name: (data.user.user_metadata && (data.user.user_metadata.name || data.user.user_metadata.full_name)) || data.user.email
+  };
+
+  document.getElementById("employeeName").textContent = currentEmployee.name;
 
   closeModal("employeeLoginModal");
   document.getElementById("employeeDashboard").classList.remove("hidden");
@@ -758,14 +757,12 @@ async function handleEmployeeLogin(event) {
 }
 
 
-
         // Employee logout
-        function employeeLogout() {
-  supabase.auth.signOut();
+ async function employeeLogout() {
+  await supabaseClient.auth.signOut();
+  currentEmployee = null;
   closeModal("employeeDashboard");
 }
-
-
         // Form handlers with Google Sheets integration
         async function handleRegister(event) {
   event.preventDefault();
