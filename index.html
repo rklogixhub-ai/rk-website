@@ -522,7 +522,7 @@
   </footer>
   <script>
    const SUPABASE_URL = "https://gtwpndodljngyiyfpzcy.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_u-lCgvNcQ910xc_n3oVnlQ_4DVBrqm";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E";
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
@@ -730,10 +730,7 @@ async function handleEmployeeLogin(event) {
   const email = event.target.employeeEmail.value.trim().toLowerCase();
   const password = event.target.password.value;
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     alert("Login failed: " + error.message);
