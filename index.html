@@ -843,36 +843,14 @@ console.log("Supabase ready:", !!supabaseClient);
     alert("Something went wrong. Please try again.");
   }
  }
-try 
+
   // ✅ Your existing submit logic must be inside here
   // Example:
   // await fetch(...)
   // await supabase.from(...).insert(...)
   // any code that can fail should remain here
 
- catch (err) {
-  console.error(err);
-
-  // Show error message
-  const modal = document.getElementById('registerModal');
-  modal.innerHTML = `
-    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </div>
-      <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Error</h3>
-      <p class="text-gray-600 mb-4">There was an error submitting the form. Please try again.</p>
-      <button onclick="closeModal('registerModal')" class="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md">
-        Try Again
-      </button>
-    </div>
-  `;
-}
-
-
-        // Scroll animations
+      // Scroll animations
         function handleScrollAnimations() {
             const sections = document.querySelectorAll('.section-fade');
             sections.forEach(section => {
