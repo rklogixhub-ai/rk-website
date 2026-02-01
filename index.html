@@ -531,6 +531,14 @@ const supabaseClient = supabase.createClient(
 
 console.log("Supabase ready:", !!supabaseClient);
 
+   // ✅ We are using Supabase only (no Google Sheets webhooks)
+const CLIENT_SCRIPT_URL = null;
+const CLIENT_READ_URL = null;
+const CONTACT_TRACKING_URL = null;
+const CONTACT_READ_URL = null;
+const RATE_CONFIRMATION_UPLOAD_URL = null;
+const PICKUP_INSTRUCTIONS_EMAIL_URL = null;
+
 
         // USA States
         const USA_STATES = [
@@ -838,26 +846,29 @@ const { data, error } = await supabaseClient.auth.signInWithPassword({ email, pa
         window.addEventListener('load', handleScrollAnimations);
 
         // Client registration handler (for employees)
-        async function handleClientRegistration(event) {
-            event.preventDefault();
+     async function handleClientRegistration(event) {
+  event.preventDefault();
 
-            if (!currentEmployee) {
-                return;
-            }
+  if (!currentEmployee) {
+    alert("Please login first.");
+    return;
+  }
 
-            // Build the form payload with employee info
-            const fd = new FormData(event.target);
-            fd.append('registeredBy', currentEmployee.id);
-            fd.append('registeredByName', currentEmployee.name);
-            fd.append('registrationDate', new Date().toISOString());
+  const fd = new FormData(event.target);
 
-            try {
-                // Send to Client Registration Google Sheet
-                await fetch(CLIENT_SCRIPT_URL, {
-                    method: "POST",
-                    body: fd,
-                    mode: "no-cors"
-                });
+  // ✅ Convert FormData to an object so it prints clearly in console
+  const payload = Object.fromEntries(fd.entries());
+
+  // ✅ Add employee info
+  payload.registeredBy = currentEmployee.id;
+  payload.registeredByName = currentEmployee.name;
+  payload.registrationDate = new Date().toISOString();
+
+  console.log("✅ Client form payload:", payload);
+
+  // STOP here for now (we will connect Supabase in next step)
+  alert("Payload logged to console. Now open Console tab and copy it here.");
+}
 
                 // Show success message overlay
                 const successOverlay = document.createElement('div');
