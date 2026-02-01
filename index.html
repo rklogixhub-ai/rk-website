@@ -762,10 +762,10 @@ async function handleEmployeeLogin(event) {
 
         // Employee logout
         function employeeLogout() {
-            currentEmployee = null;
-            closeModal('employeeDashboard');
-            document.getElementById('clientRegistrationForm').reset();
-        }
+  supabase.auth.signOut();
+  closeModal("employeeDashboard");
+}
+
 
         // Form handlers with Google Sheets integration
         async function handleRegister(event) {
