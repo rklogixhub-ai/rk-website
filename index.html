@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RK LOGIX HUB - Connecting Drivers &amp; Dispatchers</title>
+  <title>RK LOGIX HUB - Connecting Drivers &amp; Carriers</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
         body {
@@ -43,7 +43,7 @@
       </div>
      </div>
      <div class="hidden md:block">
-      <div class="ml-10 flex items-baseline space-x-4"><a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a> <a href="#dispatcher" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DISPATCHER</a> <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a> <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a> <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a> <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button> <button onclick="openEmployeePortal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">EMPLOYEE LOGIN</button>
+      <div class="ml-10 flex items-baseline space-x-4"><a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a> <a href="#carrier" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CARRIER</a> <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a> <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a> <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a> <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button> <button onclick="openEmployeePortal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">EMPLOYEE LOGIN</button>
       </div>
      </div><!-- Mobile menu button -->
      <div class="md:hidden"><button onclick="toggleMobileMenu()" class="text-white hover:text-gray-300 focus:outline-none">
@@ -53,29 +53,210 @@
     </div>
    </div><!-- Mobile menu -->
    <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
-    <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#dispatcher" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DISPATCHER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="openEmployeePortal()" class="w-full text-left bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-base font-medium">EMPLOYEE LOGIN</button>
+    <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="openEmployeePortal()" class="w-full text-left bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-base font-medium">EMPLOYEE LOGIN</button>
     </div>
    </div>
   </nav><!-- Home Section -->
   <section id="home" class="hero-bg text-white pt-20">
-   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="text-center">
-     <div class="truck-icon mb-8">
-      <svg class="w-20 h-20 mx-auto text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-      </svg>
-     </div>
-     <h1 class="text-5xl md:text-6xl font-bold mb-6">RK LOGIX HUB</h1>
-     <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Connecting Drivers and Dispatchers Through Smart Technology</p>
-     <p class="text-lg mb-10 max-w-2xl mx-auto">Your trusted platform for seamless trucking operations, efficient load management, and reliable transportation solutions.</p>
-     <div class="space-x-4"><button onclick="showRegister()" class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">Get Started</button>
-     </div>
+
+   <!-- Truck Sketch Animation -->
+   <div id="truck-animation" style="display:flex;align-items:center;justify-content:center;padding:4rem 2rem;">
+    <svg id="truck-sketch" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+
+     <!-- 1. Trailer body -->
+     <rect class="sk" id="s1" x="20" y="60" width="560" height="200" rx="6" stroke-width="2.5"/>
+     <!-- 2. Trailer ribs -->
+     <line class="sk" id="s2" x1="100" y1="62" x2="100" y2="258" stroke-width="1.5"/>
+     <line class="sk" id="s3" x1="200" y1="62" x2="200" y2="258" stroke-width="1.5"/>
+     <line class="sk" id="s4" x1="300" y1="62" x2="300" y2="258" stroke-width="1.5"/>
+     <line class="sk" id="s5" x1="400" y1="62" x2="400" y2="258" stroke-width="1.5"/>
+     <line class="sk" id="s6" x1="500" y1="62" x2="500" y2="258" stroke-width="1.5"/>
+     <!-- 3. Support legs -->
+     <line class="sk" id="s7" x1="510" y1="260" x2="510" y2="300" stroke-width="2"/>
+     <line class="sk" id="s8" x1="510" y1="300" x2="530" y2="300" stroke-width="2"/>
+     <line class="sk" id="s9" x1="535" y1="260" x2="535" y2="300" stroke-width="2"/>
+     <line class="sk" id="s10" x1="535" y1="300" x2="555" y2="300" stroke-width="2"/>
+     <!-- 4. Cab body -->
+     <path class="sk" id="s11" d="M582 90 L582 278 L870 278 L870 178 Q868 90 800 88 Z" stroke-width="2.5"/>
+     <!-- 5. Roof fairing -->
+     <path class="sk" id="s12" d="M582 90 Q600 30 650 22 L800 22 Q850 24 870 90" stroke-width="2.5"/>
+     <!-- 6. Windshield -->
+     <path class="sk" id="s13" d="M596 92 Q612 34 656 26 L798 26 Q844 30 858 92 Z" stroke-width="1.5" stroke-opacity="0.7"/>
+     <!-- 7. Side window -->
+     <rect class="sk" id="s14" x="586" y="106" width="68" height="76" rx="5" stroke-width="1.5" stroke-opacity="0.7"/>
+     <!-- 8. Cab door line -->
+     <line class="sk" id="s15" x1="680" y1="94" x2="680" y2="278" stroke-width="1.5"/>
+     <!-- 9. Door handle -->
+     <rect class="sk" id="s16" x="700" y="196" width="42" height="10" rx="4" stroke-width="1.5"/>
+     <!-- 10. Exhaust stacks -->
+     <rect class="sk" id="s17" x="820" y="2" width="18" height="56" rx="5" stroke-width="2"/>
+     <rect class="sk" id="s18" x="846" y="2" width="18" height="56" rx="5" stroke-width="2"/>
+     <!-- 11. Headlights -->
+     <rect class="sk" id="s19" x="858" y="110" width="30" height="24" rx="3" stroke-width="1.5"/>
+     <rect class="sk" id="s20" x="858" y="142" width="30" height="18" rx="3" stroke-width="1.5" stroke-opacity="0.6"/>
+     <!-- 12. Grille -->
+     <rect class="sk" id="s21" x="858" y="166" width="30" height="40" rx="3" stroke-width="1.5"/>
+     <line class="sk" id="s22" x1="858" y1="176" x2="888" y2="176" stroke-width="1"/>
+     <line class="sk" id="s23" x1="858" y1="186" x2="888" y2="186" stroke-width="1"/>
+     <line class="sk" id="s24" x1="858" y1="196" x2="888" y2="196" stroke-width="1"/>
+     <!-- 13. Bumper -->
+     <rect class="sk" id="s25" x="858" y="208" width="34" height="18" rx="3" stroke-width="2"/>
+     <!-- 14. Fuel tanks -->
+     <rect class="sk" id="s26" x="582" y="218" width="44" height="52" rx="8" stroke-width="1.5"/>
+     <rect class="sk" id="s27" x="632" y="218" width="44" height="52" rx="8" stroke-width="1.5"/>
+     <!-- 15. Hitch -->
+     <rect class="sk" id="s28" x="562" y="238" width="28" height="16" rx="4" stroke-width="1.5"/>
+     <!-- 16. Axle bars -->
+     <line class="sk" id="s29" x1="60" y1="278" x2="240" y2="278" stroke-width="2"/>
+     <line class="sk" id="s30" x1="660" y1="278" x2="840" y2="278" stroke-width="2"/>
+     <!-- 17. Trailer wheel 1 outer -->
+     <circle class="sk" id="s31" cx="100" cy="306" r="34" stroke-width="2.5"/>
+     <circle class="sk" id="s32" cx="100" cy="306" r="18" stroke-width="1.5"/>
+     <circle class="sk" id="s33" cx="100" cy="306" r="6" stroke-width="1.5"/>
+     <!-- 18. Trailer wheel 2 outer -->
+     <circle class="sk" id="s34" cx="200" cy="306" r="34" stroke-width="2.5"/>
+     <circle class="sk" id="s35" cx="200" cy="306" r="18" stroke-width="1.5"/>
+     <circle class="sk" id="s36" cx="200" cy="306" r="6" stroke-width="1.5"/>
+     <!-- 19. Drive wheel 1 -->
+     <circle class="sk" id="s37" cx="700" cy="306" r="34" stroke-width="2.5"/>
+     <circle class="sk" id="s38" cx="700" cy="306" r="18" stroke-width="1.5"/>
+     <circle class="sk" id="s39" cx="700" cy="306" r="6" stroke-width="1.5"/>
+     <!-- 20. Drive wheel 2 -->
+     <circle class="sk" id="s40" cx="800" cy="306" r="30" stroke-width="2.5"/>
+     <circle class="sk" id="s41" cx="800" cy="306" r="16" stroke-width="1.5"/>
+     <circle class="sk" id="s42" cx="800" cy="306" r="6" stroke-width="1.5"/>
+
+    </svg>
+   </div>
+
+   <!-- Hero content shown after animation -->
+   <div id="hero-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center" style="display:none;">
+    <h1 class="text-5xl md:text-6xl font-bold mb-6">RK LOGIX HUB</h1>
+    <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Connecting Drivers and Carriers Through Smart Technology</p>
+    <p class="text-lg mb-10 max-w-2xl mx-auto">Your trusted platform for seamless trucking operations, efficient load management, and reliable transportation solutions.</p>
+    <div class="space-x-4"><button onclick="showRegister()" class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">Get Started</button>
     </div>
    </div>
-  </section><!-- Dispatcher Section -->
-  <section id="dispatcher" class="py-20 bg-white section-fade">
+
+   <style>
+    @keyframes fadeInUp {
+     from { opacity: 0; transform: translateY(28px); }
+     to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOutDown {
+     from { opacity: 1; transform: translateY(0); }
+     to   { opacity: 0; transform: translateY(28px); }
+    }
+   </style>
+
+   <script>
+    (function() {
+     var els = document.querySelectorAll('.sk');
+     var delay = 80;
+     var duration = 200;
+     var drawTotal = els.length * delay + duration;
+     var holdSketch = 400;
+     var fadeTime = 400;
+     var holdText = 1800;
+
+     // Pre-compute lengths once
+     var lengths = [];
+     els.forEach(function(el) {
+      lengths.push(el.getTotalLength ? el.getTotalLength() : 300);
+     });
+
+     function resetSketch() {
+      els.forEach(function(el, i) {
+       el.style.transition = 'none';
+       el.style.strokeDasharray = lengths[i];
+       el.style.strokeDashoffset = lengths[i];
+      });
+     }
+
+     function drawSketch(onDone) {
+      els.forEach(function(el, i) {
+       setTimeout(function() {
+        el.style.transition = 'stroke-dashoffset ' + duration + 'ms ease';
+        el.style.strokeDashoffset = '0';
+       }, i * delay);
+      });
+      setTimeout(onDone, drawTotal + holdSketch);
+     }
+
+     function showText(onDone) {
+      var anim = document.getElementById('truck-animation');
+      var hero = document.getElementById('hero-content');
+      // Fade out sketch
+      anim.style.transition = 'opacity ' + fadeTime + 'ms';
+      anim.style.opacity = '0';
+      setTimeout(function() {
+       anim.style.display = 'none';
+       // Fade in text
+       hero.style.display = 'block';
+       hero.style.opacity = '0';
+       hero.style.animation = 'none';
+       hero.style.transform = 'translateY(28px)';
+       hero.style.transition = 'opacity ' + fadeTime + 'ms, transform ' + fadeTime + 'ms';
+       setTimeout(function() {
+        hero.style.opacity = '1';
+        hero.style.transform = 'translateY(0)';
+       }, 30);
+       setTimeout(onDone, holdText);
+      }, fadeTime);
+     }
+
+     function hideText(onDone) {
+      var hero = document.getElementById('hero-content');
+      hero.style.transition = 'opacity ' + fadeTime + 'ms, transform ' + fadeTime + 'ms';
+      hero.style.opacity = '0';
+      hero.style.transform = 'translateY(28px)';
+      setTimeout(function() {
+       hero.style.display = 'none';
+       onDone();
+      }, fadeTime);
+     }
+
+     function showSketch(onDone) {
+      var anim = document.getElementById('truck-animation');
+      anim.style.display = 'flex';
+      anim.style.transition = 'opacity ' + fadeTime + 'ms';
+      anim.style.opacity = '0';
+      setTimeout(function() {
+       anim.style.opacity = '1';
+       onDone();
+      }, 30);
+     }
+
+     function loop() {
+      resetSketch();
+      showSketch(function() {
+       drawSketch(function() {
+        showText(function() {
+         hideText(function() {
+          loop();
+         });
+        });
+       });
+      });
+     }
+
+     // Kick off
+     resetSketch();
+     drawSketch(function() {
+      showText(function() {
+       hideText(function() {
+        loop();
+       });
+      });
+     });
+    })();
+   </script>
+
+  </section><!-- Carrier Section -->
+   <section id="carrier" class="py-20 bg-white section-fade">
    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-     <h2 class="text-4xl font-bold text-gray-900 mb-4">For Dispatchers</h2>
+     <h2 class="text-4xl font-bold text-gray-900 mb-4">For Carriers</h2>
      <p class="text-xl text-gray-600 max-w-3xl mx-auto">Streamline your operations with our comprehensive dispatch management system</p>
     </div>
     <div class="grid md:grid-cols-3 gap-8">
@@ -164,14 +345,14 @@
          Active Drivers
         </div>
        </div>
-       <div class="text-center p-4 bg-black rounded-lg">
-        <div class="text-2xl font-bold text-white">
-         100+
+        <div class="text-center p-4 bg-black rounded-lg">
+         <div class="text-2xl font-bold text-white">
+          100+
+         </div>
+         <div class="text-gray-300">
+           Carriers
+          </div>
         </div>
-        <div class="text-gray-300">
-         Dispatchers
-        </div>
-       </div>
       </div>
      </div>
      <div class="text-center">
@@ -248,7 +429,7 @@
      </div>
      <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Phone</label> <input type="tel" name="phone" placeholder="Phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
      </div>
-     <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label> <select name="role" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="Driver">Driver</option> <option value="Dispatcher">Dispatcher</option> </select>
+     <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label> <select name="role" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"> <option value="Driver">Driver</option> <option value="Carrier">Carrier</option> </select>
      </div><button type="submit" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded-md transition-colors"> Register </button>
     </form>
    </div>
