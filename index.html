@@ -36,11 +36,13 @@
  <body class="bg-gray-50"><!-- Navigation -->
   <nav class="bg-black shadow-lg fixed w-full top-0 z-50">
    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
+     <div class="flex justify-between items-center" style="height:80px;">
      <div class="flex items-center">
-      <div class="flex-shrink-0">
-       <h1 class="text-2xl font-bold text-white">RK LOGIX HUB</h1>
-      </div>
+       <div class="flex-shrink-0">
+        <a href="#home" style="text-decoration:none;display:inline-block;">
+          <img src="rk.png" alt="RK LOGIX HUB" style="height:64px;width:auto;display:block;cursor:pointer;object-fit:contain;">
+        </a>
+       </div>
      </div>
      <div class="hidden md:block">
       <div class="ml-10 flex items-baseline space-x-4"><a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a> <a href="#carrier" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CARRIER</a> <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a> <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a> <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a> <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button> <button onclick="openEmployeePortal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">EMPLOYEE LOGIN</button>
@@ -57,11 +59,12 @@
     </div>
    </div>
   </nav><!-- Home Section -->
-  <section id="home" class="hero-bg text-white pt-20">
+   <section id="home" class="hero-bg text-white" style="padding-top:80px;">
+    <div style="position:relative;width:100%;height:500px;overflow:hidden;">
 
-   <!-- Truck Sketch Animation -->
-   <div id="truck-animation" style="display:flex;align-items:center;justify-content:center;padding:4rem 2rem;overflow:hidden;">
-    <svg id="truck-sketch" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round">
+     <!-- Truck Sketch Animation -->
+     <div id="truck-animation" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:2rem;overflow:hidden;">
+      <svg id="truck-sketch" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;height:100%;max-height:340px;" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round">
 
      <!-- 1. Trailer body -->
      <rect class="sk" id="s1" x="20" y="60" width="560" height="200" rx="6" stroke-width="2.5"/>
@@ -126,16 +129,14 @@
      <circle class="sk" id="s41" cx="800" cy="306" r="16" stroke-width="1.5"/>
      <circle class="sk" id="s42" cx="800" cy="306" r="6" stroke-width="1.5"/>
 
-    </svg>
-   </div>
-
-   <!-- Hero content shown after animation -->
-   <div id="hero-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center" style="display:none;">
-    <h1 class="text-5xl md:text-6xl font-bold mb-6">RK LOGIX HUB</h1>
-    <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Connecting Drivers and Carriers Through Smart Technology</p>
-    <p class="text-lg mb-10 max-w-2xl mx-auto">Your trusted platform for seamless trucking operations, efficient load management, and reliable transportation solutions.</p>
-    <div class="space-x-4"><button onclick="showRegister()" class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold transition-colors">Get Started</button>
+     </svg>
     </div>
+
+    <!-- Hero content shown after animation -->
+    <div id="hero-content" style="display:none;position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;">
+      <video id="logo-video" src="rk_logix_logo_animation.mp4" muted playsinline style="max-width:100%;max-height:420px;width:auto;margin:0 auto;display:block;object-fit:contain;mix-blend-mode:lighten;"></video>
+    </div>
+
    </div>
 
    <style>
@@ -198,19 +199,29 @@
      function showText(onDone) {
       var anim = document.getElementById('truck-animation');
       var hero = document.getElementById('hero-content');
+      var video = document.getElementById('logo-video');
       anim.style.transition = 'opacity ' + fadeTime + 'ms';
       anim.style.opacity = '0';
       setTimeout(function() {
        anim.style.display = 'none';
-       hero.style.display = 'block';
-       hero.style.opacity = '0';
-       hero.style.transform = 'translateY(28px)';
-       hero.style.transition = 'opacity ' + fadeTime + 'ms, transform ' + fadeTime + 'ms';
-       setTimeout(function() {
-        hero.style.opacity = '1';
-        hero.style.transform = 'translateY(0)';
-       }, 30);
-       setTimeout(onDone, holdText);
+       // Keep video invisible until it actually starts playing
+       video.style.opacity = '0';
+       video.style.transition = 'none';
+       video.currentTime = 0;
+       hero.style.display = 'flex';
+       hero.style.opacity = '1';
+       video.onplaying = function() {
+        video.style.transition = 'opacity 200ms';
+        video.style.opacity = '1';
+       };
+       video.onended = function() {
+        video.style.transition = 'opacity 200ms';
+        video.style.opacity = '0';
+        setTimeout(function() {
+         onDone();
+        }, 200);
+       };
+       video.play();
       }, fadeTime);
      }
 
@@ -244,11 +255,6 @@
         });
        });
       });
-     }
-
-     loop();
-    })();
-   </script>
      }
 
      loop();
@@ -498,7 +504,7 @@
 <body class="bg-gray-50 h-full">
     <nav class="bg-black shadow-lg fixed w-full top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+            <div class="flex justify-between items-center h-24">
                 <div class="flex items-center">
                     <h1 class="text-2xl font-bold text-white">RK LOGIX HUB - Employee Portal</h1>
                 </div>
