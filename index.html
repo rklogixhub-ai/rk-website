@@ -60,7 +60,7 @@
   <section id="home" class="hero-bg text-white pt-20">
 
    <!-- Truck Sketch Animation -->
-   <div id="truck-animation" style="display:flex;align-items:center;justify-content:center;padding:4rem 2rem;">
+   <div id="truck-animation" style="display:flex;align-items:center;justify-content:center;padding:4rem 2rem;overflow:hidden;">
     <svg id="truck-sketch" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:900px;" fill="none" stroke="white" stroke-linecap="round" stroke-linejoin="round">
 
      <!-- 1. Trailer body -->
@@ -152,20 +152,23 @@
    <script>
     (function() {
      var els = document.querySelectorAll('.sk');
-     var delay = 80;
-     var duration = 200;
+     var delay = 45;
+     var duration = 120;
      var drawTotal = els.length * delay + duration;
-     var holdSketch = 400;
-     var fadeTime = 400;
-     var holdText = 1800;
+     var holdAfterDraw = 150;
+     var moveDuration = 1000;
+     var fadeTime = 300;
+     var holdText = 1500;
 
-     // Pre-compute lengths once
      var lengths = [];
      els.forEach(function(el) {
       lengths.push(el.getTotalLength ? el.getTotalLength() : 300);
      });
 
-     function resetSketch() {
+     function resetTruck() {
+      var svg = document.getElementById('truck-sketch');
+      svg.style.transition = 'none';
+      svg.style.transform = 'translateX(0)';
       els.forEach(function(el, i) {
        el.style.transition = 'none';
        el.style.strokeDasharray = lengths[i];
@@ -173,28 +176,34 @@
       });
      }
 
-     function drawSketch(onDone) {
+     function drawTruck(onDone) {
       els.forEach(function(el, i) {
        setTimeout(function() {
         el.style.transition = 'stroke-dashoffset ' + duration + 'ms ease';
         el.style.strokeDashoffset = '0';
        }, i * delay);
       });
-      setTimeout(onDone, drawTotal + holdSketch);
+      setTimeout(onDone, drawTotal + holdAfterDraw);
+     }
+
+     function moveTruck(onDone) {
+      var svg = document.getElementById('truck-sketch');
+      setTimeout(function() {
+       svg.style.transition = 'transform ' + moveDuration + 'ms linear';
+       svg.style.transform = 'translateX(120%)';
+      }, 30);
+      setTimeout(onDone, moveDuration + 30);
      }
 
      function showText(onDone) {
       var anim = document.getElementById('truck-animation');
       var hero = document.getElementById('hero-content');
-      // Fade out sketch
       anim.style.transition = 'opacity ' + fadeTime + 'ms';
       anim.style.opacity = '0';
       setTimeout(function() {
        anim.style.display = 'none';
-       // Fade in text
        hero.style.display = 'block';
        hero.style.opacity = '0';
-       hero.style.animation = 'none';
        hero.style.transform = 'translateY(28px)';
        hero.style.transition = 'opacity ' + fadeTime + 'ms, transform ' + fadeTime + 'ms';
        setTimeout(function() {
@@ -207,9 +216,8 @@
 
      function hideText(onDone) {
       var hero = document.getElementById('hero-content');
-      hero.style.transition = 'opacity ' + fadeTime + 'ms, transform ' + fadeTime + 'ms';
+      hero.style.transition = 'opacity ' + fadeTime + 'ms';
       hero.style.opacity = '0';
-      hero.style.transform = 'translateY(28px)';
       setTimeout(function() {
        hero.style.display = 'none';
        onDone();
@@ -219,36 +227,31 @@
      function showSketch(onDone) {
       var anim = document.getElementById('truck-animation');
       anim.style.display = 'flex';
-      anim.style.transition = 'opacity ' + fadeTime + 'ms';
-      anim.style.opacity = '0';
-      setTimeout(function() {
-       anim.style.opacity = '1';
-       onDone();
-      }, 30);
+      anim.style.opacity = '1';
+      onDone();
      }
 
      function loop() {
-      resetSketch();
+      resetTruck();
       showSketch(function() {
-       drawSketch(function() {
-        showText(function() {
-         hideText(function() {
-          loop();
+       drawTruck(function() {
+        moveTruck(function() {
+         showText(function() {
+          hideText(function() {
+           loop();
+          });
          });
         });
        });
       });
      }
 
-     // Kick off
-     resetSketch();
-     drawSketch(function() {
-      showText(function() {
-       hideText(function() {
-        loop();
-       });
-      });
-     });
+     loop();
+    })();
+   </script>
+     }
+
+     loop();
     })();
    </script>
 
