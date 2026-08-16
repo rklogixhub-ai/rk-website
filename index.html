@@ -37,22 +37,23 @@
   <nav class="bg-black shadow-lg fixed w-full top-0 z-50">
    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
      <div class="flex justify-between items-center" style="height:80px;">
-     <div class="flex items-center">
-       <div class="flex-shrink-0">
-        <a href="#home" style="text-decoration:none;display:inline-block;">
-          <img src="rk.png" alt="RK LOGIX HUB" style="height:64px;width:auto;display:block;cursor:pointer;object-fit:contain;">
-        </a>
-       </div>
-     </div>
-     <div class="hidden md:block">
-      <div class="ml-10 flex items-baseline space-x-4"><a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a> <a href="#carrier" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CARRIER</a> <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a> <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a> <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a> <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button></div>
+      <div class="flex-shrink-0">
+       <a href="#home" style="text-decoration:none;display:inline-block;">
+        <img src="rk.png" alt="RK LOGIX HUB" style="height:64px;width:auto;display:block;cursor:pointer;object-fit:contain;">
+       </a>
       </div>
-     </div><!-- Mobile menu button -->
-      <div class="md:hidden ml-auto"><button onclick="toggleMobileMenu()" class="text-white hover:text-gray-300 focus:outline-none">
-       <svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-       </svg></button>
+      <div class="hidden md:flex items-baseline space-x-4">
+       <a href="#home" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">HOME</a>
+       <a href="#carrier" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CARRIER</a>
+       <a href="#driver" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">DRIVER</a>
+       <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a>
+       <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a>
+       <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button>
+      </div>
+      <button onclick="toggleMobileMenu()" class="md:hidden text-white hover:text-gray-300 focus:outline-none">
+       <svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
      </div>
-    </div>
    </div><!-- Mobile menu -->
    <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
     <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button></div>
