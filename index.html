@@ -17,6 +17,38 @@
     }
     return db;
    }
+
+   // ── Security: Rate limiting ──────────────────────────────────────────
+   // Max 3 attempts per 10 minutes per browser session
+   var RATE_LIMIT_MAX = 3;
+   var RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes in ms
+   function checkRateLimit() {
+    var now = Date.now();
+    var attempts = JSON.parse(localStorage.getItem('reg_attempts') || '[]');
+    // Remove attempts outside the window
+    attempts = attempts.filter(function(t) { return now - t < RATE_LIMIT_WINDOW; });
+    if (attempts.length >= RATE_LIMIT_MAX) {
+     var waitMin = Math.ceil((RATE_LIMIT_WINDOW - (now - attempts[0])) / 60000);
+     alert('Too many registration attempts. Please try again in ' + waitMin + ' minute(s).');
+     return false;
+    }
+    attempts.push(now);
+    localStorage.setItem('reg_attempts', JSON.stringify(attempts));
+    return true;
+   }
+
+   // ── Security: Input sanitization ────────────────────────────────────
+   function sanitize(str) {
+    if (!str) return '';
+    return str
+     .replace(/&/g, '&amp;')
+     .replace(/</g, '&lt;')
+     .replace(/>/g, '&gt;')
+     .replace(/"/g, '&quot;')
+     .replace(/'/g, '&#x27;')
+     .replace(/\//g, '&#x2F;')
+     .trim();
+   }
   </script>
   <style>
         body {
@@ -1105,38 +1137,52 @@
         async function handleRegister(event) {
             event.preventDefault();
             const form = event.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
 
-            const name       = form.elements["name"]?.value?.trim();
-            const email      = form.elements["email"]?.value?.trim().toLowerCase();
-            const country    = form.elements["country"]?.value?.trim();
-            const phoneCode  = form.elements["phoneCode"]?.value?.trim();
-            const phoneNum   = form.elements["phoneNumber"]?.value?.trim();
-            const role       = form.elements["role"]?.value?.trim();
+            // ── Rate limit check ─────────────────────────────────────────
+            if (!checkRateLimit()) return;
+
+            // ── Disable button to prevent double submit ──────────────────
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // ── Read and sanitize inputs ─────────────────────────────────
+            const name      = sanitize(form.elements["name"]?.value);
+            const email     = sanitize(form.elements["email"]?.value?.toLowerCase());
+            const country   = sanitize(form.elements["country"]?.value);
+            const phoneCode = sanitize(form.elements["phoneCode"]?.value);
+            const phoneNum  = sanitize(form.elements["phoneNumber"]?.value);
+            const role      = sanitize(form.elements["role"]?.value);
+
+            // ── Helper to re-enable button on error ──────────────────────
+            function resetBtn() {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register';
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
 
             // --- Validations ---
 
             // Name
-            if (!name) { alert("Please enter your full name."); return; }
+            if (!name) { resetBtn(); alert("Please enter your full name."); return; }
             if (!/^[a-zA-Z\s'-]{2,}$/.test(name)) {
-                alert("Name can only contain letters, spaces, hyphens or apostrophes (min 2 characters).");
-                return;
+                resetBtn(); alert("Name can only contain letters, spaces, hyphens or apostrophes (min 2 characters)."); return;
             }
 
             // Email
-            if (!email) { alert("Please enter your email address."); return; }
+            if (!email) { resetBtn(); alert("Please enter your email address."); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert("Please enter a valid email address (e.g. name@example.com).");
-                return;
+                resetBtn(); alert("Please enter a valid email address (e.g. name@example.com)."); return;
             }
 
             // Country
-            if (!country) { alert("Please select your country."); return; }
+            if (!country) { resetBtn(); alert("Please select your country."); return; }
 
             // Phone
-            if (!phoneNum) { alert("Please enter your phone number."); return; }
+            if (!phoneNum) { resetBtn(); alert("Please enter your phone number."); return; }
             if (!/^\d+$/.test(phoneNum)) {
-                alert("Phone number should contain digits only (no spaces or dashes).");
-                return;
+                resetBtn(); alert("Phone number should contain digits only (no spaces or dashes)."); return;
             }
 
             // Validate digit count based on selected country
@@ -1145,18 +1191,18 @@
             const allowedDigits = selected.getAttribute('data-digits').split(',').map(Number);
             if (!allowedDigits.includes(phoneNum.length)) {
                 const hint = allowedDigits.join(' or ');
+                resetBtn();
                 alert("Phone number for " + selected.text.split(' (')[0] + " must be " + hint + " digits (excluding country code). You entered " + phoneNum.length + " digits.");
                 return;
             }
 
             const phone = phoneCode + phoneNum;
-            if (!role) { alert("Please select a role."); return; }
+            if (!role) { resetBtn(); alert("Please select a role."); return; }
 
             try {
                 const client = getDb();
                 if (!client) {
-                    alert("Database not initialized. Please refresh and try again.");
-                    return;
+                    resetBtn(); alert("Database not initialized. Please refresh and try again."); return;
                 }
 
                 // Check for duplicate email
@@ -1168,11 +1214,10 @@
 
                 if (checkError) {
                     console.error("Check error:", checkError);
-                    alert("Registration failed: " + checkError.message);
-                    return;
+                    resetBtn(); alert("Registration failed: " + checkError.message); return;
                 }
                 if (existing) {
-                    alert("This email is already registered. Please use a different email.");
+                    resetBtn(); alert("This email is already registered. Please use a different email.");
                     return;
                 }
 
@@ -1184,8 +1229,7 @@
 
                 if (error) {
                     console.error("Supabase error:", error);
-                    alert("Registration failed: " + error.message);
-                    return;
+                    resetBtn(); alert("Registration failed: " + error.message); return;
                 }
 
                 const modal = document.getElementById('registerModal');
@@ -1205,7 +1249,7 @@
                 `;
             } catch (err) {
                 console.error(err);
-                alert("Something went wrong. Please try again.");
+                resetBtn(); alert("Something went wrong. Please try again.");
             }
         }
 
