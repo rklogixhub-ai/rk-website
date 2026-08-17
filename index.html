@@ -969,9 +969,10 @@
             }
 
             try {
-                const { error } = await db
+                const { data, error } = await db
                     .from("registrations")
-                    .insert([{ name, email, phone, role }]);
+                    .insert([{ name, email, phone, role }])
+                    .select();
 
                 if (error) {
                     console.error("Supabase error:", error);
