@@ -953,9 +953,88 @@
         }
 
         // Modal functions
+        // Country codes data
+        const COUNTRY_CODES = [
+            {name:"Afghanistan",code:"+93",iso:"AF",digits:[9]},
+            {name:"Albania",code:"+355",iso:"AL",digits:[9]},
+            {name:"Algeria",code:"+213",iso:"DZ",digits:[9]},
+            {name:"Argentina",code:"+54",iso:"AR",digits:[10]},
+            {name:"Australia",code:"+61",iso:"AU",digits:[9]},
+            {name:"Austria",code:"+43",iso:"AT",digits:[10,11]},
+            {name:"Bangladesh",code:"+880",iso:"BD",digits:[10]},
+            {name:"Belgium",code:"+32",iso:"BE",digits:[9]},
+            {name:"Brazil",code:"+55",iso:"BR",digits:[10,11]},
+            {name:"Canada",code:"+1",iso:"CA",digits:[10]},
+            {name:"Chile",code:"+56",iso:"CL",digits:[9]},
+            {name:"China",code:"+86",iso:"CN",digits:[11]},
+            {name:"Colombia",code:"+57",iso:"CO",digits:[10]},
+            {name:"Croatia",code:"+385",iso:"HR",digits:[8,9]},
+            {name:"Czech Republic",code:"+420",iso:"CZ",digits:[9]},
+            {name:"Denmark",code:"+45",iso:"DK",digits:[8]},
+            {name:"Egypt",code:"+20",iso:"EG",digits:[10]},
+            {name:"Ethiopia",code:"+251",iso:"ET",digits:[9]},
+            {name:"Finland",code:"+358",iso:"FI",digits:[9,10]},
+            {name:"France",code:"+33",iso:"FR",digits:[9]},
+            {name:"Germany",code:"+49",iso:"DE",digits:[10,11]},
+            {name:"Ghana",code:"+233",iso:"GH",digits:[9]},
+            {name:"Greece",code:"+30",iso:"GR",digits:[10]},
+            {name:"Hong Kong",code:"+852",iso:"HK",digits:[8]},
+            {name:"Hungary",code:"+36",iso:"HU",digits:[9]},
+            {name:"India",code:"+91",iso:"IN",digits:[10]},
+            {name:"Indonesia",code:"+62",iso:"ID",digits:[9,10,11]},
+            {name:"Iran",code:"+98",iso:"IR",digits:[10]},
+            {name:"Iraq",code:"+964",iso:"IQ",digits:[10]},
+            {name:"Ireland",code:"+353",iso:"IE",digits:[9]},
+            {name:"Israel",code:"+972",iso:"IL",digits:[9]},
+            {name:"Italy",code:"+39",iso:"IT",digits:[9,10]},
+            {name:"Japan",code:"+81",iso:"JP",digits:[10,11]},
+            {name:"Jordan",code:"+962",iso:"JO",digits:[9]},
+            {name:"Kenya",code:"+254",iso:"KE",digits:[9]},
+            {name:"Kuwait",code:"+965",iso:"KW",digits:[8]},
+            {name:"Malaysia",code:"+60",iso:"MY",digits:[9,10]},
+            {name:"Mexico",code:"+52",iso:"MX",digits:[10]},
+            {name:"Morocco",code:"+212",iso:"MA",digits:[9]},
+            {name:"Netherlands",code:"+31",iso:"NL",digits:[9]},
+            {name:"New Zealand",code:"+64",iso:"NZ",digits:[8,9]},
+            {name:"Nigeria",code:"+234",iso:"NG",digits:[10]},
+            {name:"Norway",code:"+47",iso:"NO",digits:[8]},
+            {name:"Oman",code:"+968",iso:"OM",digits:[8]},
+            {name:"Pakistan",code:"+92",iso:"PK",digits:[10]},
+            {name:"Peru",code:"+51",iso:"PE",digits:[9]},
+            {name:"Philippines",code:"+63",iso:"PH",digits:[10]},
+            {name:"Poland",code:"+48",iso:"PL",digits:[9]},
+            {name:"Portugal",code:"+351",iso:"PT",digits:[9]},
+            {name:"Qatar",code:"+974",iso:"QA",digits:[8]},
+            {name:"Romania",code:"+40",iso:"RO",digits:[9]},
+            {name:"Russia",code:"+7",iso:"RU",digits:[10]},
+            {name:"Saudi Arabia",code:"+966",iso:"SA",digits:[9]},
+            {name:"Singapore",code:"+65",iso:"SG",digits:[8]},
+            {name:"South Africa",code:"+27",iso:"ZA",digits:[9]},
+            {name:"South Korea",code:"+82",iso:"KR",digits:[9,10]},
+            {name:"Spain",code:"+34",iso:"ES",digits:[9]},
+            {name:"Sri Lanka",code:"+94",iso:"LK",digits:[9]},
+            {name:"Sweden",code:"+46",iso:"SE",digits:[9]},
+            {name:"Switzerland",code:"+41",iso:"CH",digits:[9]},
+            {name:"Taiwan",code:"+886",iso:"TW",digits:[9]},
+            {name:"Tanzania",code:"+255",iso:"TZ",digits:[9]},
+            {name:"Thailand",code:"+66",iso:"TH",digits:[9]},
+            {name:"Turkey",code:"+90",iso:"TR",digits:[10]},
+            {name:"UAE",code:"+971",iso:"AE",digits:[9]},
+            {name:"Uganda",code:"+256",iso:"UG",digits:[9]},
+            {name:"Ukraine",code:"+380",iso:"UA",digits:[9]},
+            {name:"United Kingdom",code:"+44",iso:"GB",digits:[10]},
+            {name:"United States",code:"+1",iso:"US",digits:[10]},
+            {name:"Venezuela",code:"+58",iso:"VE",digits:[10]},
+            {name:"Vietnam",code:"+84",iso:"VN",digits:[9,10]},
+            {name:"Yemen",code:"+967",iso:"YE",digits:[9]},
+            {name:"Zimbabwe",code:"+263",iso:"ZW",digits:[9]}
+        ];
+
         function showRegister() {
             const modal = document.getElementById('registerModal');
-            // Reset modal back to form in case success message was shown
+            const countryOptions = COUNTRY_CODES.map(c =>
+                `<option value="${c.code}" data-digits="${c.digits.join(',')}">${c.name} (${c.code})</option>`
+            ).join('');
             modal.innerHTML = `
                 <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
                     <div class="flex justify-between items-center mb-6">
@@ -965,16 +1044,31 @@
                         </button>
                     </div>
                     <form id="registerForm" onsubmit="handleRegister(event)">
-                        <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Full Name</label>
                             <input type="text" name="name" placeholder="Full Name" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
                         </div>
-                        <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                             <input type="email" name="email" placeholder="Email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
                         </div>
-                        <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">Phone</label>
-                            <input type="tel" name="phone" placeholder="Phone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Country</label>
+                            <select id="countrySelect" name="country" required onchange="updatePhoneCode()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+                                <option value="">-- Select Country --</option>
+                                ${countryOptions}
+                            </select>
                         </div>
-                        <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="phoneCode" name="phoneCode" readonly value="" placeholder="+1" class="w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 font-bold focus:outline-none">
+                                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Enter number" required class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
+                            </div>
+                            <p id="phoneHint" class="text-xs text-gray-400 mt-1">Select a country first</p>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Register as:</label>
                             <select name="role" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black">
                                 <option value="Driver">Driver</option>
                                 <option value="Carrier">Carrier</option>
@@ -987,6 +1081,22 @@
             modal.classList.remove('hidden');
         }
 
+        function updatePhoneCode() {
+            const select = document.getElementById('countrySelect');
+            const selected = select.options[select.selectedIndex];
+            const code = selected.value;
+            const digits = selected.getAttribute('data-digits');
+            document.getElementById('phoneCode').value = code;
+            if (digits) {
+                const digitList = digits.split(',');
+                const hint = digitList.length > 1
+                    ? digitList.join(' or ') + ' digits'
+                    : digitList[0] + ' digits';
+                document.getElementById('phoneHint').textContent = 'Enter ' + hint + ' (excluding country code)';
+            }
+            document.getElementById('phoneNumber').focus();
+        }
+
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
         }
@@ -996,55 +1106,53 @@
             event.preventDefault();
             const form = event.target;
 
-            const name  = form.elements["name"]?.value?.trim();
-            const email = form.elements["email"]?.value?.trim().toLowerCase();
-            const phone = form.elements["phone"]?.value?.trim();
-            const role  = form.elements["role"]?.value?.trim();
+            const name       = form.elements["name"]?.value?.trim();
+            const email      = form.elements["email"]?.value?.trim().toLowerCase();
+            const country    = form.elements["country"]?.value?.trim();
+            const phoneCode  = form.elements["phoneCode"]?.value?.trim();
+            const phoneNum   = form.elements["phoneNumber"]?.value?.trim();
+            const role       = form.elements["role"]?.value?.trim();
 
             // --- Validations ---
 
-            // Name: only letters and spaces, min 2 chars
-            if (!name) {
-                alert("Please enter your full name.");
-                return;
-            }
+            // Name
+            if (!name) { alert("Please enter your full name."); return; }
             if (!/^[a-zA-Z\s'-]{2,}$/.test(name)) {
                 alert("Name can only contain letters, spaces, hyphens or apostrophes (min 2 characters).");
                 return;
             }
 
-            // Email: standard format
-            if (!email) {
-                alert("Please enter your email address.");
-                return;
-            }
+            // Email
+            if (!email) { alert("Please enter your email address."); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                 alert("Please enter a valid email address (e.g. name@example.com).");
                 return;
             }
 
-            // Phone: international format — digits, spaces, +, -, (), min 7 max 15 digits
-            if (!phone) {
-                alert("Please enter your phone number.");
-                return;
-            }
-            const digitsOnly = phone.replace(/\D/g, '');
-            if (!/^[+\d][\d\s\-().]{5,19}$/.test(phone)) {
-                alert("Please enter a valid phone number (e.g. +1 234 567 8900).");
-                return;
-            }
-            if (digitsOnly.length < 7 || digitsOnly.length > 15) {
-                alert("Phone number must have between 7 and 15 digits.");
+            // Country
+            if (!country) { alert("Please select your country."); return; }
+
+            // Phone
+            if (!phoneNum) { alert("Please enter your phone number."); return; }
+            if (!/^\d+$/.test(phoneNum)) {
+                alert("Phone number should contain digits only (no spaces or dashes).");
                 return;
             }
 
-            if (!role) {
-                alert("Please select a role.");
+            // Validate digit count based on selected country
+            const select = document.getElementById('countrySelect');
+            const selected = select.options[select.selectedIndex];
+            const allowedDigits = selected.getAttribute('data-digits').split(',').map(Number);
+            if (!allowedDigits.includes(phoneNum.length)) {
+                const hint = allowedDigits.join(' or ');
+                alert("Phone number for " + selected.text.split(' (')[0] + " must be " + hint + " digits (excluding country code). You entered " + phoneNum.length + " digits.");
                 return;
             }
+
+            const phone = phoneCode + phoneNum;
+            if (!role) { alert("Please select a role."); return; }
 
             try {
-                console.log('Attempting insert:', { name, email, phone, role });
                 const client = getDb();
                 if (!client) {
                     alert("Database not initialized. Please refresh and try again.");
@@ -1063,7 +1171,6 @@
                     alert("Registration failed: " + checkError.message);
                     return;
                 }
-
                 if (existing) {
                     alert("This email is already registered. Please use a different email.");
                     return;
@@ -1071,7 +1178,7 @@
 
                 const { data, error } = await client
                     .from("registrations")
-                    .insert([{ name, email, phone, role }])
+                    .insert([{ name, email, phone, role, country }])
                     .select();
                 console.log('Supabase response - data:', data, 'error:', error);
 
