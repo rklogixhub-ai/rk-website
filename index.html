@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RK LOGIX HUB - Connecting Drivers &amp; Carriers</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
         body {
             box-sizing: border-box;
@@ -852,6 +853,12 @@
             document.getElementById('employeeLoginForm').reset();
         }
 
+        // ─── Supabase Configuration ───────────────────────────────────────
+        const SUPABASE_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ─────────────────────────────────────────────────────────────────
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
             document.querySelectorAll('.tab-button').forEach(button => {
@@ -946,17 +953,31 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Form handlers with Google Sheets integration
+        // Form handlers with Supabase integration
         async function handleRegister(event) {
             event.preventDefault();
-            const fd = new FormData(event.target);
+            const form = event.target;
+
+            const name  = form.elements["name"]?.value?.trim();
+            const email = form.elements["email"]?.value?.trim().toLowerCase();
+            const phone = form.elements["phone"]?.value?.trim();
+            const role  = form.elements["role"]?.value?.trim();
+
+            if (!name || !email || !phone || !role) {
+                alert("Please fill all fields.");
+                return;
+            }
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    body: fd,
-                    mode: "no-cors"
-                });
+                const { error } = await db
+                    .from("registrations")
+                    .insert([{ name, email, phone, role }]);
+
+                if (error) {
+                    console.error("Supabase error:", error);
+                    alert("Registration failed: " + error.message);
+                    return;
+                }
 
                 const modal = document.getElementById('registerModal');
                 modal.innerHTML = `
@@ -973,10 +994,10 @@
                         </button>
                     </div>
                 `;
-                
-                event.target.reset();
+                form.reset();
             } catch (err) {
                 console.error(err);
+                alert("Something went wrong. Please try again.");
             }
         }
 
