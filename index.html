@@ -1001,8 +1001,45 @@
             const phone = form.elements["phone"]?.value?.trim();
             const role  = form.elements["role"]?.value?.trim();
 
-            if (!name || !email || !phone || !role) {
-                alert("Please fill all fields.");
+            // --- Validations ---
+
+            // Name: only letters and spaces, min 2 chars
+            if (!name) {
+                alert("Please enter your full name.");
+                return;
+            }
+            if (!/^[a-zA-Z\s'-]{2,}$/.test(name)) {
+                alert("Name can only contain letters, spaces, hyphens or apostrophes (min 2 characters).");
+                return;
+            }
+
+            // Email: standard format
+            if (!email) {
+                alert("Please enter your email address.");
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert("Please enter a valid email address (e.g. name@example.com).");
+                return;
+            }
+
+            // Phone: international format — digits, spaces, +, -, (), min 7 max 15 digits
+            if (!phone) {
+                alert("Please enter your phone number.");
+                return;
+            }
+            const digitsOnly = phone.replace(/\D/g, '');
+            if (!/^[+\d][\d\s\-().]{5,19}$/.test(phone)) {
+                alert("Please enter a valid phone number (e.g. +1 234 567 8900).");
+                return;
+            }
+            if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+                alert("Phone number must have between 7 and 15 digits.");
+                return;
+            }
+
+            if (!role) {
+                alert("Please select a role.");
                 return;
             }
 
