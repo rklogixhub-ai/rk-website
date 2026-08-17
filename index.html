@@ -5,12 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RK LOGIX HUB - Connecting Drivers &amp; Carriers</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
   <script>
-   const SUPABASE_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
-   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
-   var db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-   console.log('Supabase db initialized:', !!db);
+   var SUPABASE_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+   var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+   var db = null;
+   function getDb() {
+    if (!db) {
+     db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+     console.log('Supabase db initialized:', !!db);
+    }
+    return db;
+   }
   </script>
   <style>
         body {
@@ -971,7 +977,7 @@
             }
 
             try {
-                const { data, error } = await db
+                const { data, error } = await getDb()
                     .from("registrations")
                     .insert([{ name, email, phone, role }])
                     .select();
