@@ -977,10 +977,17 @@
             }
 
             try {
-                const { data, error } = await getDb()
+                console.log('Attempting insert:', { name, email, phone, role });
+                const client = getDb();
+                if (!client) {
+                    alert("Database not initialized. Please refresh and try again.");
+                    return;
+                }
+                const { data, error } = await client
                     .from("registrations")
                     .insert([{ name, email, phone, role }])
                     .select();
+                console.log('Supabase response - data:', data, 'error:', error);
 
                 if (error) {
                     console.error("Supabase error:", error);
