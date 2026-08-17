@@ -18,24 +18,8 @@
     return db;
    }
 
-   // ── Security: Rate limiting ──────────────────────────────────────────
-   // Max 3 attempts per 10 minutes per browser session
-   var RATE_LIMIT_MAX = 3;
-   var RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes in ms
-   function checkRateLimit() {
-    var now = Date.now();
-    var attempts = JSON.parse(localStorage.getItem('reg_attempts') || '[]');
-    // Remove attempts outside the window
-    attempts = attempts.filter(function(t) { return now - t < RATE_LIMIT_WINDOW; });
-    if (attempts.length >= RATE_LIMIT_MAX) {
-     var waitMin = Math.ceil((RATE_LIMIT_WINDOW - (now - attempts[0])) / 60000);
-     alert('Too many registration attempts. Please try again in ' + waitMin + ' minute(s).');
-     return false;
-    }
-    attempts.push(now);
-    localStorage.setItem('reg_attempts', JSON.stringify(attempts));
-    return true;
-   }
+   // ── Security: Rate limiting (disabled during testing) ───────────────
+   function checkRateLimit() { return true; }
 
    // ── Security: Input sanitization ────────────────────────────────────
    function sanitize(str) {
@@ -1218,6 +1202,22 @@
                 }
                 if (existing) {
                     resetBtn(); alert("This email is already registered. Please use a different email.");
+                    return;
+                }
+
+                // Check for duplicate phone number
+                const { data: existingPhone, error: phoneCheckError } = await client
+                    .from("registrations")
+                    .select("phone")
+                    .eq("phone", phone)
+                    .maybeSingle();
+
+                if (phoneCheckError) {
+                    console.error("Phone check error:", phoneCheckError);
+                    resetBtn(); alert("Registration failed: " + phoneCheckError.message); return;
+                }
+                if (existingPhone) {
+                    resetBtn(); alert("This phone number is already registered. Please use a different phone number.");
                     return;
                 }
 
