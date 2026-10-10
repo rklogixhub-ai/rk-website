@@ -309,21 +309,22 @@
 
   // ── Sidebar ───────────────────────────────────────────────────────────────
   function renderSidebar() {
-    const list = document.getElementById('driver-list');
-    const noMsg = document.getElementById('no-drivers-msg');
+    const list  = document.getElementById('driver-list');
     const count = Object.keys(drivers).length;
 
     document.getElementById('driver-count').textContent = count;
 
+    // Clear list but keep noMsg reference safe
+    list.innerHTML = '';
+
     if (count === 0) {
-      noMsg.style.display = 'block';
-      list.innerHTML = '';
-      list.appendChild(noMsg);
+      const empty = document.createElement('div');
+      empty.className = 'no-drivers';
+      empty.id = 'no-drivers-msg';
+      empty.textContent = 'Waiting for drivers…';
+      list.appendChild(empty);
       return;
     }
-
-    noMsg.style.display = 'none';
-    list.innerHTML = '';
 
     Object.values(drivers)
       .sort((a, b) => (b.is_online ? 1 : 0) - (a.is_online ? 1 : 0))
