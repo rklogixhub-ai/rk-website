@@ -422,6 +422,9 @@
   loadDrivers();
   subscribeRealtime();
 
+  // Poll every 5s as fallback (in case realtime subscription is blocked)
+  setInterval(loadDrivers, 5000);
+
   // Refresh popup timestamps every 30s
   setInterval(() => {
     Object.entries(drivers).forEach(([id, d]) => {
