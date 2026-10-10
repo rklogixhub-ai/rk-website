@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RK Logix — Live Driver Map</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #000;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #000;
+      border-bottom: 3px solid #fff;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header img { height: 32px; object-fit: contain; }
+
+    header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(74,222,128,0.12);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: #4ade80;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(1.4); }
+    }
+
+    /* ── Layout ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 300px;
+      background: #0a0a0a;
+      border-right: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid #222;
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #driver-count {
+      background: #fff;
+      color: #000;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    #driver-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .driver-item {
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+      margin-bottom: 6px;
+    }
+
+    .driver-item:hover { background: #1a1a1a; }
+    .driver-item.selected { background: #1c1c1c; border-color: #444; }
+
+    .driver-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .driver-item-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .online-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    .offline-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #555;
+    }
+
+    .driver-item-meta {
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    .driver-item-speed {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    .no-drivers {
+      padding: 24px 16px;
+      text-align: center;
+      color: #555;
+      font-size: 0.85rem;
+    }
+
+    /* ── Map ── */
+    #map {
+      flex: 1;
+      background: #111;
+    }
+
+    /* ── Leaflet dark overrides ── */
+    .leaflet-container { background: #1a1a1a; }
+
+    .leaflet-popup-content-wrapper {
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    .leaflet-popup-tip { background: #111; }
+
+    .popup-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .popup-row {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 3px;
+    }
+
+    .popup-row span { color: #fff; font-weight: 600; }
+
+    /* ── Mobile: collapse sidebar ── */
+    @media (max-width: 640px) {
+      .sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid #222; }
+      .main { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <img src="../rk.png" alt="RK Logix" onerror="this.style.display='none'" />
+    <h1>LIVE DRIVER MAP</h1>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Sidebar: driver list -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      Active Drivers
+      <span id="driver-count">0</span>
+    </div>
+    <div id="driver-list">
+      <div class="no-drivers" id="no-drivers-msg">Waiting for drivers…</div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<script>
+  // ── Supabase (RK Logix — single source of truth) ─────────────────────────
+  const SUPABASE_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ── Map init ──────────────────────────────────────────────────────────────
+  const map = L.map('map', { zoomControl: true }).setView([43.65, -79.38], 11);
+
+  // Dark tile layer (CartoDB Dark Matter)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(map);
+
+  // ── Marker store ──────────────────────────────────────────────────────────
+  const markers = {};   // driver_id → L.marker
+  const drivers = {};   // driver_id → latest data
+
+  // Custom truck icon
+  function makeIcon(isOnline) {
+    return L.divIcon({
+      className: '',
+      html: `
+        <div style="
+          width:36px; height:36px;
+          background:${isOnline ? '#fff' : '#444'};
+          border-radius:50%;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+          border: 2px solid ${isOnline ? '#4ade80' : '#666'};
+        ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="${isOnline ? '#000' : '#aaa'}">
+            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+        </div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -20],
+    });
+  }
+
+  function popupHtml(d) {
+    const ago = d.updated_at
+      ? Math.round((Date.now() - new Date(d.updated_at)) / 1000) + 's ago'
+      : '—';
+    const speed = d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—';
+    const platform = d.platform === 'g3link' ? 'G3 Link' : 'RK Logix';
+    return `
+      <div class="popup-name">${d.driver_name || d.driver_id}</div>
+      <div class="popup-row">ID: <span>${d.driver_id}</span></div>
+      <div class="popup-row">Platform: <span>${platform}</span></div>
+      <div class="popup-row">Speed: <span>${speed}</span></div>
+      <div class="popup-row">Updated: <span>${ago}</span></div>
+      <div class="popup-row">Coords: <span>${d.lat.toFixed(5)}, ${d.lng.toFixed(5)}</span></div>
+    `;
+  }
+
+  // ── Sidebar ───────────────────────────────────────────────────────────────
+  function renderSidebar() {
+    const list = document.getElementById('driver-list');
+    const noMsg = document.getElementById('no-drivers-msg');
+    const count = Object.keys(drivers).length;
+
+    document.getElementById('driver-count').textContent = count;
+
+    if (count === 0) {
+      noMsg.style.display = 'block';
+      list.innerHTML = '';
+      list.appendChild(noMsg);
+      return;
+    }
+
+    noMsg.style.display = 'none';
+    list.innerHTML = '';
+
+    Object.values(drivers)
+      .sort((a, b) => (b.is_online ? 1 : 0) - (a.is_online ? 1 : 0))
+      .forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'driver-item';
+        item.dataset.id = d.driver_id;
+
+        const speed = d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : 'Stationary';
+        const platform = d.platform === 'g3link' ? 'G3 Link' : 'RK Logix';
+
+        item.innerHTML = `
+          <div class="driver-item-top">
+            <div class="driver-item-name">${d.driver_name || d.driver_id}</div>
+            <div class="${d.is_online ? 'online-dot' : 'offline-dot'}"></div>
+          </div>
+          <div class="driver-item-meta">${d.driver_id} · ${platform}</div>
+          <div class="driver-item-speed">${speed}</div>
+        `;
+
+        item.addEventListener('click', () => {
+          if (markers[d.driver_id]) {
+            map.setView([d.lat, d.lng], 15, { animate: true });
+            markers[d.driver_id].openPopup();
+          }
+          document.querySelectorAll('.driver-item').forEach(el => el.classList.remove('selected'));
+          item.classList.add('selected');
+        });
+
+        list.appendChild(item);
+      });
+  }
+
+  // ── Add / update marker ───────────────────────────────────────────────────
+  function upsertMarker(d) {
+    drivers[d.driver_id] = d;
+
+    if (markers[d.driver_id]) {
+      markers[d.driver_id].setLatLng([d.lat, d.lng]);
+      markers[d.driver_id].setIcon(makeIcon(d.is_online !== false));
+      markers[d.driver_id].setPopupContent(popupHtml(d));
+    } else {
+      const m = L.marker([d.lat, d.lng], { icon: makeIcon(d.is_online !== false) })
+        .addTo(map)
+        .bindPopup(popupHtml(d));
+      markers[d.driver_id] = m;
+    }
+
+    renderSidebar();
+  }
+
+  // ── Initial load ──────────────────────────────────────────────────────────
+  async function loadDrivers() {
+    const { data, error } = await db
+      .from('driver_locations')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (error) { console.error('Load error:', error); return; }
+
+    if (data && data.length > 0) {
+      data.forEach(upsertMarker);
+
+      // Fit map to all markers
+      const bounds = L.latLngBounds(data.map(d => [d.lat, d.lng]));
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }
+
+  // ── Real-time subscription ────────────────────────────────────────────────
+  function subscribeRealtime() {
+    db.channel('driver_locations_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'driver_locations' },
+        payload => {
+          const d = payload.new || payload.old;
+          if (!d) return;
+
+          if (payload.eventType === 'DELETE') {
+            if (markers[d.driver_id]) {
+              map.removeLayer(markers[d.driver_id]);
+              delete markers[d.driver_id];
+              delete drivers[d.driver_id];
+              renderSidebar();
+            }
+          } else {
+            upsertMarker(d);
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  loadDrivers();
+  subscribeRealtime();
+
+  // Refresh popup timestamps every 30s
+  setInterval(() => {
+    Object.entries(drivers).forEach(([id, d]) => {
+      if (markers[id]) markers[id].setPopupContent(popupHtml(d));
+    });
+  }, 30000);
+</script>
+
+</body>
+</html>

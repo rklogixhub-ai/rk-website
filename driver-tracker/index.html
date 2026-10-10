@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="RK Driver" />
+  <link rel="manifest" href="manifest.json" />
+  <title>RK Logix — Driver Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    header {
+      width: 100%;
+      background: #000;
+      border-bottom: 3px solid #fff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header img {
+      height: 36px;
+      object-fit: contain;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Login card ── */
+    .card {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #e5e5e5;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      background: #1c1c1c;
+      border: 1px solid #444;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #fff;
+    }
+
+    select option { background: #1c1c1c; }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 18px;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: #fff;
+      color: #000;
+    }
+
+    .btn-primary:hover { background: #e5e5e5; }
+
+    .btn-danger {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+    }
+
+    .btn-danger:hover { background: #444; }
+
+    /* ── Status card ── */
+    #status-card { display: none; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .status-badge.active {
+      background: rgba(34,197,94,0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+
+    .status-badge.inactive {
+      background: rgba(255,255,255,0.08);
+      color: #aaa;
+      border: 1px solid #333;
+    }
+
+    .pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .info-box {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .info-box .label {
+      font-size: 0.72rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .info-box .value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .info-box .value.small {
+      font-size: 0.82rem;
+    }
+
+    /* ── Log ── */
+    #log {
+      font-size: 0.78rem;
+      color: #666;
+      max-height: 120px;
+      overflow-y: auto;
+      background: #0a0a0a;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 10px 12px;
+      line-height: 1.6;
+    }
+
+    #log .entry { border-bottom: 1px solid #1a1a1a; padding: 3px 0; }
+    #log .entry:last-child { border-bottom: none; }
+    #log .entry.ok { color: #4ade80; }
+    #log .entry.err { color: #f87171; }
+    #log .entry.info { color: #60a5fa; }
+
+    /* ── Error banner ── */
+    #error-banner {
+      display: none;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: #f87171;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+    }
+
+    /* ── Driver name display ── */
+    .driver-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .driver-meta {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 16px;
+    }
+
+    /* ── Accuracy indicator ── */
+    .accuracy-bar-wrap {
+      margin-top: 8px;
+    }
+
+    .accuracy-bar-wrap .label {
+      font-size: 0.72rem;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .accuracy-bar {
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .accuracy-fill {
+      height: 100%;
+      background: #4ade80;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="../rk.png" alt="RK Logix" onerror="this.style.display='none'" />
+  <h1>RK LOGIX — Driver Tracker</h1>
+</header>
+
+<div class="container">
+
+  <!-- Error banner -->
+  <div id="error-banner"></div>
+
+  <!-- Login card -->
+  <div class="card" id="login-card">
+    <h2>Sign in to start tracking</h2>
+
+    <label for="driver-id">Driver ID</label>
+    <input type="text" id="driver-id" placeholder="e.g. DRV-001" autocomplete="off" />
+
+    <label for="driver-name-input">Your Name</label>
+    <input type="text" id="driver-name-input" placeholder="Full name" autocomplete="name" />
+
+    <label for="platform">Platform</label>
+    <select id="platform">
+      <option value="rklogix">RK Logix Hub</option>
+      <option value="g3link">G3 Link Solutions</option>
+    </select>
+
+    <button class="btn btn-primary" onclick="startTracking()">Start Tracking</button>
+  </div>
+
+  <!-- Active tracking card -->
+  <div class="card" id="status-card">
+    <div class="status-badge active" id="status-badge">
+      <div class="pulse" id="pulse-dot"></div>
+      <span id="status-text">Locating…</span>
+    </div>
+
+    <div class="driver-name" id="display-name">—</div>
+    <div class="driver-meta" id="display-meta">—</div>
+
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="label">Latitude</div>
+        <div class="value small" id="val-lat">—</div>
+      </div>
+      <div class="info-box">
+        <div class="label">Longitude</div>
+        <div class="value small" id="val-lng">—</div>
+      </div>
+      <div class="info-box">
+        <div class="label">Speed</div>
+        <div class="value" id="val-speed">—</div>
+      </div>
+      <div class="info-box">
+        <div class="label">Heading</div>
+        <div class="value" id="val-heading">—</div>
+      </div>
+    </div>
+
+    <div class="accuracy-bar-wrap">
+      <div class="label">GPS Accuracy</div>
+      <div class="accuracy-bar">
+        <div class="accuracy-fill" id="accuracy-fill" style="width:0%"></div>
+      </div>
+      <div style="font-size:0.75rem;color:#666;margin-top:4px;" id="val-accuracy">Waiting for GPS…</div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div class="label" style="font-size:0.72rem;color:#888;margin-bottom:6px;">Activity Log</div>
+      <div id="log"></div>
+    </div>
+
+    <button class="btn btn-danger" onclick="stopTracking()" style="margin-top:16px;">Stop Tracking</button>
+  </div>
+
+</div>
+
+<footer>RK Logix Hub &copy; 2024 &mdash; Driver location is only shared while tracking is active.</footer>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────
+  const RKLOGIX_URL  = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+  const RKLOGIX_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+
+  // RK Logix is the single source of truth for location data.
+  // G3 Link reads from RK Logix via the API endpoint.
+  const db = supabase.createClient(RKLOGIX_URL, RKLOGIX_KEY);
+
+  // ── State ────────────────────────────────────────────────────────────────
+  let watchId      = null;
+  let driverId     = null;
+  let driverName   = null;
+  let platform     = null;
+  let updateCount  = 0;
+  const INTERVAL_MS = 5000; // send location every 5 s
+  let lastSent     = 0;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function log(msg, type = 'info') {
+    const el = document.getElementById('log');
+    const entry = document.createElement('div');
+    entry.className = `entry ${type}`;
+    const time = new Date().toLocaleTimeString();
+    entry.textContent = `[${time}] ${msg}`;
+    el.prepend(entry);
+    // keep max 30 entries
+    while (el.children.length > 30) el.removeChild(el.lastChild);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 6000);
+  }
+
+  function fmtSpeed(mps) {
+    if (mps == null || isNaN(mps) || mps < 0) return '— km/h';
+    return (mps * 3.6).toFixed(1) + ' km/h';
+  }
+
+  function fmtHeading(deg) {
+    if (deg == null || isNaN(deg)) return '—°';
+    const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+    const idx = Math.round(deg / 45) % 8;
+    return dirs[idx] + ' ' + Math.round(deg) + '°';
+  }
+
+  function accuracyPct(meters) {
+    // 0 m = 100%, 100 m = 0%
+    if (!meters) return 0;
+    return Math.max(0, Math.min(100, 100 - meters));
+  }
+
+  // ── Core: send location to Supabase ──────────────────────────────────────
+  async function upsertLocation(pos) {
+    const now = Date.now();
+    if (now - lastSent < INTERVAL_MS) return; // throttle
+    lastSent = now;
+
+    const { coords } = pos;
+    const payload = {
+      driver_id:  driverId,
+      driver_name: driverName,
+      platform:   platform,
+      lat:        coords.latitude,
+      lng:        coords.longitude,
+      accuracy:   coords.accuracy,
+      speed:      coords.speed,
+      heading:    coords.heading,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await db
+      .from('driver_locations')
+      .upsert(payload, { onConflict: 'driver_id' });
+
+    if (error) {
+      log('Upload failed: ' + error.message, 'err');
+      showError('Location upload failed. Check connection.');
+    } else {
+      updateCount++;
+      log(`Location sent #${updateCount} — ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`, 'ok');
+    }
+  }
+
+  // ── UI update on position change ─────────────────────────────────────────
+  function onPosition(pos) {
+    const { coords } = pos;
+
+    document.getElementById('val-lat').textContent     = coords.latitude.toFixed(6);
+    document.getElementById('val-lng').textContent     = coords.longitude.toFixed(6);
+    document.getElementById('val-speed').textContent   = fmtSpeed(coords.speed);
+    document.getElementById('val-heading').textContent = fmtHeading(coords.heading);
+    document.getElementById('val-accuracy').textContent = coords.accuracy
+      ? `±${Math.round(coords.accuracy)} m`
+      : 'Unknown';
+
+    const pct = accuracyPct(coords.accuracy);
+    document.getElementById('accuracy-fill').style.width = pct + '%';
+
+    // Change fill color based on accuracy
+    const fill = document.getElementById('accuracy-fill');
+    if (coords.accuracy <= 20)       fill.style.background = '#4ade80'; // green
+    else if (coords.accuracy <= 60)  fill.style.background = '#facc15'; // yellow
+    else                             fill.style.background = '#f87171'; // red
+
+    document.getElementById('status-text').textContent = 'Tracking Active';
+
+    upsertLocation(pos);
+  }
+
+  function onError(err) {
+    let msg = 'GPS error';
+    if (err.code === 1) msg = 'Location permission denied. Please allow location access.';
+    else if (err.code === 2) msg = 'GPS signal unavailable. Move to open area.';
+    else if (err.code === 3) msg = 'GPS timeout. Retrying…';
+    log(msg, 'err');
+    showError(msg);
+
+    const badge = document.getElementById('status-badge');
+    badge.className = 'status-badge inactive';
+    document.getElementById('status-text').textContent = 'GPS Error';
+    document.getElementById('pulse-dot').style.background = '#f87171';
+  }
+
+  // ── Start / Stop ──────────────────────────────────────────────────────────
+  function startTracking() {
+    driverId   = document.getElementById('driver-id').value.trim();
+    driverName = document.getElementById('driver-name-input').value.trim();
+    platform   = document.getElementById('platform').value;
+
+    if (!driverId || !driverName) {
+      showError('Please enter your Driver ID and Name.');
+      return;
+    }
+
+    if (!('geolocation' in navigator)) {
+      showError('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    // Show status card
+    document.getElementById('login-card').style.display  = 'none';
+    document.getElementById('status-card').style.display = 'block';
+    document.getElementById('display-name').textContent  = driverName;
+    document.getElementById('display-meta').textContent  = `ID: ${driverId} · ${platform === 'rklogix' ? 'RK Logix Hub' : 'G3 Link Solutions'}`;
+
+    log('Starting GPS watch…', 'info');
+
+    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0,
+    });
+
+    // Keep screen awake if Wake Lock API is available
+    if ('wakeLock' in navigator) {
+      navigator.wakeLock.request('screen').catch(() => {});
+    }
+
+    // Save session to localStorage so page refresh restores state
+    localStorage.setItem('rk_driver_session', JSON.stringify({ driverId, driverName, platform }));
+  }
+
+  function stopTracking() {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
+    // Mark driver as offline
+    db.from('driver_locations')
+      .update({ is_online: false, updated_at: new Date().toISOString() })
+      .eq('driver_id', driverId)
+      .then(() => log('Marked offline.', 'info'));
+
+    localStorage.removeItem('rk_driver_session');
+
+    document.getElementById('status-card').style.display = 'none';
+    document.getElementById('login-card').style.display  = 'block';
+    log('Tracking stopped.', 'info');
+  }
+
+  // ── Restore session on reload ─────────────────────────────────────────────
+  window.addEventListener('load', () => {
+    const saved = localStorage.getItem('rk_driver_session');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        document.getElementById('driver-id').value          = s.driverId;
+        document.getElementById('driver-name-input').value  = s.driverName;
+        document.getElementById('platform').value           = s.platform;
+      } catch(e) {}
+    }
+  });
+
+  // ── Service Worker registration ───────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+
+</body>
+</html>
