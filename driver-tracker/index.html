@@ -8,10 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="apple-mobile-web-app-title" content="RK Driver" />
   <link rel="manifest" href="manifest.json" />
-  <title>RK Logix — Driver Tracker</title>
+  <title>RK Logix — Driver</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: #000;
@@ -20,545 +19,521 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
     }
-
     header {
       width: 100%;
       background: #000;
       border-bottom: 3px solid #fff;
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
     }
-
-    header img {
-      height: 36px;
-      object-fit: contain;
+    header h1 { font-size: 1rem; font-weight: 800; letter-spacing: 3px; }
+    #logout-btn {
+      font-size: 0.8rem; color: #888; cursor: pointer;
+      background: none; border: none; display: none;
     }
+    .container { width: 100%; max-width: 480px; padding: 24px 20px; }
 
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #fff;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 480px;
-      padding: 24px 20px;
+    /* ── Tabs ── */
+    .tabs {
       display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* ── Login card ── */
-    .card {
       background: #111;
-      border: 1px solid #333;
-      border-radius: 16px;
-      padding: 24px;
-    }
-
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #e5e5e5;
-    }
-
-    label {
-      display: block;
-      font-size: 0.78rem;
-      color: #aaa;
-      margin-bottom: 4px;
-      margin-top: 12px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px 14px;
-      background: #1c1c1c;
-      border: 1px solid #444;
       border-radius: 10px;
-      color: #fff;
-      font-size: 0.95rem;
-      outline: none;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .tab {
+      flex: 1; padding: 10px; text-align: center;
+      border-radius: 8px; cursor: pointer;
+      font-size: 0.88rem; font-weight: 600; color: #666;
+      transition: all 0.2s;
+    }
+    .tab.active { background: #fff; color: #000; }
+
+    /* ── Card ── */
+    .card {
+      background: #111; border: 1px solid #222;
+      border-radius: 16px; padding: 24px;
+    }
+    .card h2 { font-size: 1rem; font-weight: 600; color: #e5e5e5; margin-bottom: 20px; }
+
+    label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 5px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.06em; }
+    input, select {
+      width: 100%; padding: 13px 14px;
+      background: #1c1c1c; border: 1px solid #333;
+      border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none;
       transition: border-color 0.2s;
     }
-
-    input:focus, select:focus {
-      border-color: #fff;
-    }
-
+    input:focus, select:focus { border-color: #fff; }
     select option { background: #1c1c1c; }
 
     .btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 18px;
+      width: 100%; padding: 14px; border: none;
+      border-radius: 10px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; margin-top: 20px;
     }
-
     .btn:active { transform: scale(0.98); }
-
-    .btn-primary {
-      background: #fff;
-      color: #000;
-    }
-
+    .btn-primary { background: #fff; color: #000; }
     .btn-primary:hover { background: #e5e5e5; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger { background: #1c1c1c; color: #fff; border: 1px solid #444; }
 
-    .btn-danger {
-      background: #333;
-      color: #fff;
-      border: 1px solid #555;
+    /* ── Status badge ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 999px;
+      font-size: 0.82rem; font-weight: 600; margin-bottom: 16px;
     }
+    .badge.active   { background: rgba(74,222,128,0.1);  border: 1px solid rgba(74,222,128,0.3); color: #4ade80; }
+    .badge.inactive { background: rgba(255,255,255,0.05); border: 1px solid #333; color: #888; }
+    .badge.pending  { background: rgba(250,204,21,0.1);  border: 1px solid rgba(250,204,21,0.3); color: #facc15; }
+    .pulse { width: 9px; height: 9px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
 
-    .btn-danger:hover { background: #444; }
-
-    /* ── Status card ── */
-    #status-card { display: none; }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .status-badge.active {
-      background: rgba(34,197,94,0.15);
-      color: #4ade80;
-      border: 1px solid rgba(34,197,94,0.3);
-    }
-
-    .status-badge.inactive {
-      background: rgba(255,255,255,0.08);
-      color: #aaa;
-      border: 1px solid #333;
-    }
-
-    .pulse {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #4ade80;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.3); }
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .info-box {
-      background: #1c1c1c;
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 12px;
-    }
-
-    .info-box .label {
-      font-size: 0.72rem;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 4px;
-    }
-
-    .info-box .value {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .info-box .value.small {
-      font-size: 0.82rem;
-    }
+    /* ── Info grid ── */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .grid-item { background: #1c1c1c; border: 1px solid #222; border-radius: 10px; padding: 12px; }
+    .grid-item .lbl { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .grid-item .val { font-size: 0.95rem; font-weight: 700; color: #fff; }
 
     /* ── Log ── */
     #log {
-      font-size: 0.78rem;
-      color: #666;
-      max-height: 120px;
-      overflow-y: auto;
-      background: #0a0a0a;
-      border: 1px solid #222;
-      border-radius: 8px;
-      padding: 10px 12px;
-      line-height: 1.6;
+      font-size: 0.75rem; color: #555; max-height: 100px;
+      overflow-y: auto; background: #0a0a0a;
+      border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px;
+      line-height: 1.7; margin-top: 14px;
     }
+    .log-ok   { color: #4ade80; }
+    .log-err  { color: #f87171; }
+    .log-info { color: #60a5fa; }
 
-    #log .entry { border-bottom: 1px solid #1a1a1a; padding: 3px 0; }
-    #log .entry:last-child { border-bottom: none; }
-    #log .entry.ok { color: #4ade80; }
-    #log .entry.err { color: #f87171; }
-    #log .entry.info { color: #60a5fa; }
-
-    /* ── Error banner ── */
-    #error-banner {
-      display: none;
-      background: rgba(248,113,113,0.1);
-      border: 1px solid rgba(248,113,113,0.3);
-      color: #f87171;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 0.85rem;
+    /* ── Alert ── */
+    .alert {
+      padding: 12px 16px; border-radius: 10px;
+      font-size: 0.85rem; margin-top: 14px; display: none;
     }
+    .alert.err  { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+    .alert.ok   { background: rgba(74,222,128,0.1);  border: 1px solid rgba(74,222,128,0.3);  color: #4ade80; }
+    .alert.warn { background: rgba(250,204,21,0.1);  border: 1px solid rgba(250,204,21,0.3);  color: #facc15; }
 
-    /* ── Driver name display ── */
-    .driver-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 4px;
-    }
+    /* ── Driver info ── */
+    .driver-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+    .driver-meta { font-size: 0.8rem; color: #666; margin-bottom: 16px; }
 
-    .driver-meta {
-      font-size: 0.8rem;
-      color: #888;
-      margin-bottom: 16px;
-    }
+    /* ── Accuracy bar ── */
+    .acc-bar { height: 4px; background: #222; border-radius: 2px; overflow: hidden; margin-top: 6px; }
+    .acc-fill { height: 100%; border-radius: 2px; transition: width 0.5s, background 0.5s; }
 
-    /* ── Accuracy indicator ── */
-    .accuracy-bar-wrap {
-      margin-top: 8px;
-    }
+    /* ── Screens ── */
+    #screen-auth    { display: block; }
+    #screen-pending { display: none; }
+    #screen-track   { display: none; }
 
-    .accuracy-bar-wrap .label {
-      font-size: 0.72rem;
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    .accuracy-bar {
-      height: 4px;
-      background: #222;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .accuracy-fill {
-      height: 100%;
-      background: #4ade80;
-      border-radius: 2px;
-      transition: width 0.5s ease;
-    }
-
-    footer {
-      margin-top: auto;
-      padding: 20px;
-      text-align: center;
-      font-size: 0.72rem;
-      color: #444;
-    }
+    footer { margin-top: auto; padding: 20px; text-align: center; font-size: 0.7rem; color: #333; }
   </style>
 </head>
 <body>
 
 <header>
-  <img src="../rk.png" alt="RK Logix" onerror="this.style.display='none'" />
-  <h1>RK LOGIX — Driver Tracker</h1>
+  <h1>RK LOGIX DRIVER</h1>
+  <button id="logout-btn" onclick="logout()">Logout</button>
 </header>
 
-<div class="container">
-
-  <!-- Error banner -->
-  <div id="error-banner"></div>
-
-  <!-- Login card -->
-  <div class="card" id="login-card">
-    <h2>Sign in to start tracking</h2>
-
-    <label for="driver-id">Driver ID</label>
-    <input type="text" id="driver-id" placeholder="e.g. DRV-001" autocomplete="off" />
-
-    <label for="driver-name-input">Your Name</label>
-    <input type="text" id="driver-name-input" placeholder="Full name" autocomplete="name" />
-
-    <label for="platform">Platform</label>
-    <select id="platform">
-      <option value="rklogix">RK Logix Hub</option>
-      <option value="g3link">G3 Link Solutions</option>
-    </select>
-
-    <button class="btn btn-primary" onclick="startTracking()">Start Tracking</button>
+<!-- ── SCREEN 1: Auth (Login / Register) ── -->
+<div class="container" id="screen-auth">
+  <div class="tabs">
+    <div class="tab active" id="tab-login"    onclick="switchTab('login')">Login</div>
+    <div class="tab"        id="tab-register" onclick="switchTab('register')">Register</div>
   </div>
 
-  <!-- Active tracking card -->
-  <div class="card" id="status-card">
-    <div class="status-badge active" id="status-badge">
-      <div class="pulse" id="pulse-dot"></div>
-      <span id="status-text">Locating…</span>
+  <!-- Login -->
+  <div id="form-login">
+    <div class="card">
+      <h2>Sign in to your account</h2>
+      <div class="alert err" id="login-err"></div>
+      <label>Driver ID</label>
+      <input type="text" id="login-id" placeholder="e.g. DRV-001" autocomplete="off" />
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Your password" />
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
     </div>
-
-    <div class="driver-name" id="display-name">—</div>
-    <div class="driver-meta" id="display-meta">—</div>
-
-    <div class="info-grid">
-      <div class="info-box">
-        <div class="label">Latitude</div>
-        <div class="value small" id="val-lat">—</div>
-      </div>
-      <div class="info-box">
-        <div class="label">Longitude</div>
-        <div class="value small" id="val-lng">—</div>
-      </div>
-      <div class="info-box">
-        <div class="label">Speed</div>
-        <div class="value" id="val-speed">—</div>
-      </div>
-      <div class="info-box">
-        <div class="label">Heading</div>
-        <div class="value" id="val-heading">—</div>
-      </div>
-    </div>
-
-    <div class="accuracy-bar-wrap">
-      <div class="label">GPS Accuracy</div>
-      <div class="accuracy-bar">
-        <div class="accuracy-fill" id="accuracy-fill" style="width:0%"></div>
-      </div>
-      <div style="font-size:0.75rem;color:#666;margin-top:4px;" id="val-accuracy">Waiting for GPS…</div>
-    </div>
-
-    <div style="margin-top:16px;">
-      <div class="label" style="font-size:0.72rem;color:#888;margin-bottom:6px;">Activity Log</div>
-      <div id="log"></div>
-    </div>
-
-    <button class="btn btn-danger" onclick="stopTracking()" style="margin-top:16px;">Stop Tracking</button>
   </div>
 
+  <!-- Register -->
+  <div id="form-register" style="display:none;">
+    <div class="card">
+      <h2>Create your driver account</h2>
+      <div class="alert err" id="reg-err"></div>
+      <div class="alert ok"  id="reg-ok"></div>
+      <label>Full Name</label>
+      <input type="text" id="reg-name" placeholder="Your full name" autocomplete="name" />
+      <label>Phone Number</label>
+      <input type="tel" id="reg-phone" placeholder="+1 647 000 0000" />
+      <label>Email (optional)</label>
+      <input type="email" id="reg-email" placeholder="your@email.com" />
+      <label>Platform</label>
+      <select id="reg-platform">
+        <option value="rklogix">RK Logix Hub</option>
+        <option value="g3link">G3 Link Solutions</option>
+      </select>
+      <label>Password</label>
+      <input type="password" id="reg-pass" placeholder="Min 6 characters" />
+      <label>Confirm Password</label>
+      <input type="password" id="reg-pass2" placeholder="Repeat password" />
+      <button class="btn btn-primary" id="reg-btn" onclick="doRegister()">Register</button>
+    </div>
+    <p style="text-align:center;color:#555;font-size:0.78rem;margin-top:16px;">
+      After registering, an admin will approve your account before you can start tracking.
+    </p>
+  </div>
 </div>
 
-<footer>RK Logix Hub &copy; 2024 &mdash; Driver location is only shared while tracking is active.</footer>
+<!-- ── SCREEN 2: Pending Approval ── -->
+<div class="container" id="screen-pending">
+  <div class="card" style="text-align:center;padding:36px 24px;">
+    <div style="font-size:2.5rem;margin-bottom:16px;">⏳</div>
+    <h2 style="margin-bottom:12px;">Account Pending Approval</h2>
+    <p style="color:#666;font-size:0.88rem;line-height:1.6;">
+      Your account has been created successfully.<br/>
+      An admin will review and approve your account shortly.<br/>
+      You will be able to start tracking once approved.
+    </p>
+    <div style="margin-top:20px;padding:12px;background:#1c1c1c;border-radius:10px;">
+      <div style="font-size:0.75rem;color:#888;margin-bottom:4px;">YOUR DRIVER ID</div>
+      <div style="font-size:1.4rem;font-weight:800;letter-spacing:2px;" id="pending-driver-id">—</div>
+    </div>
+    <button class="btn btn-danger" onclick="logout()" style="margin-top:20px;">Sign Out</button>
+  </div>
+</div>
+
+<!-- ── SCREEN 3: Active Tracking ── -->
+<div class="container" id="screen-track">
+
+  <div class="badge inactive" id="track-badge">
+    <div class="pulse" id="pulse-dot" style="background:#555;animation:none;"></div>
+    <span id="track-status">Not Tracking</span>
+  </div>
+
+  <div class="driver-name" id="track-name">—</div>
+  <div class="driver-meta" id="track-meta">—</div>
+
+  <div class="alert err"  id="track-err"></div>
+
+  <div class="grid">
+    <div class="grid-item"><div class="lbl">Latitude</div><div class="val" id="val-lat">—</div></div>
+    <div class="grid-item"><div class="lbl">Longitude</div><div class="val" id="val-lng">—</div></div>
+    <div class="grid-item"><div class="lbl">Speed</div><div class="val" id="val-speed">—</div></div>
+    <div class="grid-item"><div class="lbl">Heading</div><div class="val" id="val-heading">—</div></div>
+  </div>
+
+  <div class="grid-item" style="margin-bottom:16px;">
+    <div class="lbl">GPS Accuracy</div>
+    <div class="acc-bar"><div class="acc-fill" id="acc-fill" style="width:0%;background:#4ade80;"></div></div>
+    <div style="font-size:0.75rem;color:#555;margin-top:4px;" id="val-acc">Waiting for GPS…</div>
+  </div>
+
+  <button class="btn btn-primary" id="track-btn" onclick="toggleTracking()">Start Tracking</button>
+
+  <div id="log"></div>
+</div>
+
+<footer>RK Logix Hub &copy; 2024 — Location shared only while tracking is active.</footer>
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
-  // ── Config ──────────────────────────────────────────────────────────────
-  const RKLOGIX_URL  = 'https://gtwpndodljngyiyfpzcy.supabase.co';
-  const RKLOGIX_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+// ── Config ────────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // RK Logix is the single source of truth for location data.
-  // G3 Link reads from RK Logix via the API endpoint.
-  const db = supabase.createClient(RKLOGIX_URL, RKLOGIX_KEY);
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentDriver = null;
+let watchId       = null;
+let updateCount   = 0;
+let lastSent      = 0;
+const INTERVAL_MS = 5000;
 
-  // ── State ────────────────────────────────────────────────────────────────
-  let watchId      = null;
-  let driverId     = null;
-  let driverName   = null;
-  let platform     = null;
-  let updateCount  = 0;
-  const INTERVAL_MS = 5000; // send location every 5 s
-  let lastSent     = 0;
+// ── Simple password hash (SHA-256 via SubtleCrypto) ───────────────────────────
+async function hashPassword(password) {
+  const enc  = new TextEncoder();
+  const buf  = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  function log(msg, type = 'info') {
-    const el = document.getElementById('log');
-    const entry = document.createElement('div');
-    entry.className = `entry ${type}`;
-    const time = new Date().toLocaleTimeString();
-    entry.textContent = `[${time}] ${msg}`;
-    el.prepend(entry);
-    // keep max 30 entries
-    while (el.children.length > 30) el.removeChild(el.lastChild);
+// ── Tab switch ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active',    tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('form-login').style.display    = tab === 'login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+// ── Show alert ────────────────────────────────────────────────────────────────
+function showAlert(id, msg, type = 'err') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type}`;
+  el.style.display = 'block';
+  if (type === 'ok') setTimeout(() => el.style.display = 'none', 5000);
+}
+
+// ── Register ──────────────────────────────────────────────────────────────────
+async function doRegister() {
+  const name     = document.getElementById('reg-name').value.trim();
+  const phone    = document.getElementById('reg-phone').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const platform = document.getElementById('reg-platform').value;
+  const pass     = document.getElementById('reg-pass').value;
+  const pass2    = document.getElementById('reg-pass2').value;
+
+  if (!name || !phone || !pass) return showAlert('reg-err', 'Name, phone and password are required.');
+  if (pass.length < 6)          return showAlert('reg-err', 'Password must be at least 6 characters.');
+  if (pass !== pass2)           return showAlert('reg-err', 'Passwords do not match.');
+
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.textContent = 'Registering…';
+
+  const hash = await hashPassword(pass);
+
+  const { data, error } = await db
+    .from('drivers')
+    .insert({
+      full_name:     name,
+      phone,
+      email:         email || null,
+      platform,
+      password_hash: hash,
+      status:        'pending',
+      driver_id:     '',   // auto-generated by trigger
+    })
+    .select('driver_id')
+    .single();
+
+  btn.disabled = false;
+  btn.textContent = 'Register';
+
+  if (error) return showAlert('reg-err', 'Registration failed: ' + error.message);
+
+  // Save session and show pending screen
+  currentDriver = { driver_id: data.driver_id, full_name: name, platform, status: 'pending' };
+  localStorage.setItem('rk_driver_session', JSON.stringify(currentDriver));
+  showPendingScreen();
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const driverId = document.getElementById('login-id').value.trim().toUpperCase();
+  const pass     = document.getElementById('login-pass').value;
+
+  if (!driverId || !pass) return showAlert('login-err', 'Please enter your Driver ID and password.');
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  const hash = await hashPassword(pass);
+
+  const { data, error } = await db
+    .from('drivers')
+    .select('driver_id, full_name, platform, status, password_hash')
+    .eq('driver_id', driverId)
+    .single();
+
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+
+  if (error || !data) return showAlert('login-err', 'Driver ID not found.');
+  if (data.password_hash !== hash) return showAlert('login-err', 'Incorrect password.');
+
+  currentDriver = data;
+  localStorage.setItem('rk_driver_session', JSON.stringify(currentDriver));
+
+  if (data.status === 'pending')   return showPendingScreen();
+  if (data.status === 'suspended') return showAlert('login-err', 'Your account has been suspended. Contact admin.');
+  if (data.status === 'approved')  return showTrackingScreen();
+
+  showAlert('login-err', 'Unknown account status. Contact admin.');
+}
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+function showAuthScreen() {
+  document.getElementById('screen-auth').style.display    = 'block';
+  document.getElementById('screen-pending').style.display = 'none';
+  document.getElementById('screen-track').style.display   = 'none';
+  document.getElementById('logout-btn').style.display     = 'none';
+}
+
+function showPendingScreen() {
+  document.getElementById('screen-auth').style.display    = 'none';
+  document.getElementById('screen-pending').style.display = 'block';
+  document.getElementById('screen-track').style.display   = 'none';
+  document.getElementById('logout-btn').style.display     = 'block';
+  document.getElementById('pending-driver-id').textContent = currentDriver.driver_id;
+}
+
+function showTrackingScreen() {
+  document.getElementById('screen-auth').style.display    = 'none';
+  document.getElementById('screen-pending').style.display = 'none';
+  document.getElementById('screen-track').style.display   = 'block';
+  document.getElementById('logout-btn').style.display     = 'block';
+  document.getElementById('track-name').textContent = currentDriver.full_name;
+  document.getElementById('track-meta').textContent =
+    `${currentDriver.driver_id} · ${currentDriver.platform === 'rklogix' ? 'RK Logix Hub' : 'G3 Link'}`;
+}
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+async function logout() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+    await markOffline();
+  }
+  currentDriver = null;
+  localStorage.removeItem('rk_driver_session');
+  showAuthScreen();
+}
+
+// ── Tracking ──────────────────────────────────────────────────────────────────
+function toggleTracking() {
+  if (watchId !== null) stopTracking();
+  else startTracking();
+}
+
+function startTracking() {
+  if (!('geolocation' in navigator)) {
+    return showAlert('track-err', 'Geolocation not supported by this browser.');
   }
 
-  function showError(msg) {
-    const el = document.getElementById('error-banner');
-    el.textContent = msg;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 6000);
-  }
+  addLog('Starting GPS…', 'info');
 
-  function fmtSpeed(mps) {
-    if (mps == null || isNaN(mps) || mps < 0) return '— km/h';
-    return (mps * 3.6).toFixed(1) + ' km/h';
-  }
-
-  function fmtHeading(deg) {
-    if (deg == null || isNaN(deg)) return '—°';
-    const dirs = ['N','NE','E','SE','S','SW','W','NW'];
-    const idx = Math.round(deg / 45) % 8;
-    return dirs[idx] + ' ' + Math.round(deg) + '°';
-  }
-
-  function accuracyPct(meters) {
-    // 0 m = 100%, 100 m = 0%
-    if (!meters) return 0;
-    return Math.max(0, Math.min(100, 100 - meters));
-  }
-
-  // ── Core: send location to Supabase ──────────────────────────────────────
-  async function upsertLocation(pos) {
-    const now = Date.now();
-    if (now - lastSent < INTERVAL_MS) return; // throttle
-    lastSent = now;
-
-    const { coords } = pos;
-    const payload = {
-      driver_id:  driverId,
-      driver_name: driverName,
-      platform:   platform,
-      lat:        coords.latitude,
-      lng:        coords.longitude,
-      accuracy:   coords.accuracy,
-      speed:      coords.speed,
-      heading:    coords.heading,
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await db
-      .from('driver_locations')
-      .upsert(payload, { onConflict: 'driver_id' });
-
-    if (error) {
-      log('Upload failed: ' + error.message, 'err');
-      showError('Location upload failed. Check connection.');
-    } else {
-      updateCount++;
-      log(`Location sent #${updateCount} — ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`, 'ok');
-    }
-  }
-
-  // ── UI update on position change ─────────────────────────────────────────
-  function onPosition(pos) {
-    const { coords } = pos;
-
-    document.getElementById('val-lat').textContent     = coords.latitude.toFixed(6);
-    document.getElementById('val-lng').textContent     = coords.longitude.toFixed(6);
-    document.getElementById('val-speed').textContent   = fmtSpeed(coords.speed);
-    document.getElementById('val-heading').textContent = fmtHeading(coords.heading);
-    document.getElementById('val-accuracy').textContent = coords.accuracy
-      ? `±${Math.round(coords.accuracy)} m`
-      : 'Unknown';
-
-    const pct = accuracyPct(coords.accuracy);
-    document.getElementById('accuracy-fill').style.width = pct + '%';
-
-    // Change fill color based on accuracy
-    const fill = document.getElementById('accuracy-fill');
-    if (coords.accuracy <= 20)       fill.style.background = '#4ade80'; // green
-    else if (coords.accuracy <= 60)  fill.style.background = '#facc15'; // yellow
-    else                             fill.style.background = '#f87171'; // red
-
-    document.getElementById('status-text').textContent = 'Tracking Active';
-
-    upsertLocation(pos);
-  }
-
-  function onError(err) {
-    let msg = 'GPS error';
-    if (err.code === 1) msg = 'Location permission denied. Please allow location access.';
-    else if (err.code === 2) msg = 'GPS signal unavailable. Move to open area.';
-    else if (err.code === 3) msg = 'GPS timeout. Retrying…';
-    log(msg, 'err');
-    showError(msg);
-
-    const badge = document.getElementById('status-badge');
-    badge.className = 'status-badge inactive';
-    document.getElementById('status-text').textContent = 'GPS Error';
-    document.getElementById('pulse-dot').style.background = '#f87171';
-  }
-
-  // ── Start / Stop ──────────────────────────────────────────────────────────
-  function startTracking() {
-    driverId   = document.getElementById('driver-id').value.trim();
-    driverName = document.getElementById('driver-name-input').value.trim();
-    platform   = document.getElementById('platform').value;
-
-    if (!driverId || !driverName) {
-      showError('Please enter your Driver ID and Name.');
-      return;
-    }
-
-    if (!('geolocation' in navigator)) {
-      showError('Geolocation is not supported by this browser.');
-      return;
-    }
-
-    // Show status card
-    document.getElementById('login-card').style.display  = 'none';
-    document.getElementById('status-card').style.display = 'block';
-    document.getElementById('display-name').textContent  = driverName;
-    document.getElementById('display-meta').textContent  = `ID: ${driverId} · ${platform === 'rklogix' ? 'RK Logix Hub' : 'G3 Link Solutions'}`;
-
-    log('Starting GPS watch…', 'info');
-
-    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0,
-    });
-
-    // Keep screen awake if Wake Lock API is available
-    if ('wakeLock' in navigator) {
-      navigator.wakeLock.request('screen').catch(() => {});
-    }
-
-    // Save session to localStorage so page refresh restores state
-    localStorage.setItem('rk_driver_session', JSON.stringify({ driverId, driverName, platform }));
-  }
-
-  function stopTracking() {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-    }
-
-    // Mark driver as offline
-    db.from('driver_locations')
-      .update({ is_online: false, updated_at: new Date().toISOString() })
-      .eq('driver_id', driverId)
-      .then(() => log('Marked offline.', 'info'));
-
-    localStorage.removeItem('rk_driver_session');
-
-    document.getElementById('status-card').style.display = 'none';
-    document.getElementById('login-card').style.display  = 'block';
-    log('Tracking stopped.', 'info');
-  }
-
-  // ── Restore session on reload ─────────────────────────────────────────────
-  window.addEventListener('load', () => {
-    const saved = localStorage.getItem('rk_driver_session');
-    if (saved) {
-      try {
-        const s = JSON.parse(saved);
-        document.getElementById('driver-id').value          = s.driverId;
-        document.getElementById('driver-name-input').value  = s.driverName;
-        document.getElementById('platform').value           = s.platform;
-      } catch(e) {}
-    }
+  watchId = navigator.geolocation.watchPosition(onPosition, onGpsError, {
+    enableHighAccuracy: true,
+    timeout: 15000,
+    maximumAge: 0,
   });
 
-  // ── Service Worker registration ───────────────────────────────────────────
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  }
-</script>
+  document.getElementById('track-btn').textContent = 'Stop Tracking';
+  document.getElementById('track-badge').className = 'badge active';
+  document.getElementById('track-status').textContent = 'Locating…';
+  document.getElementById('pulse-dot').style.cssText = 'background:#4ade80;animation:pulse 1.5s infinite;';
 
+  if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(() => {});
+}
+
+function stopTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  markOffline();
+  document.getElementById('track-btn').textContent = 'Start Tracking';
+  document.getElementById('track-badge').className = 'badge inactive';
+  document.getElementById('track-status').textContent = 'Not Tracking';
+  document.getElementById('pulse-dot').style.cssText = 'background:#555;animation:none;';
+  addLog('Tracking stopped.', 'info');
+}
+
+async function onPosition(pos) {
+  const { coords } = pos;
+
+  // Update UI
+  document.getElementById('val-lat').textContent     = coords.latitude.toFixed(6);
+  document.getElementById('val-lng').textContent     = coords.longitude.toFixed(6);
+  document.getElementById('val-speed').textContent   = coords.speed != null ? (coords.speed * 3.6).toFixed(1) + ' km/h' : '—';
+  document.getElementById('val-heading').textContent = coords.heading != null ? Math.round(coords.heading) + '°' : '—';
+  document.getElementById('val-acc').textContent     = coords.accuracy ? `±${Math.round(coords.accuracy)} m` : '—';
+  document.getElementById('track-status').textContent = 'Tracking Active';
+
+  const pct = Math.max(0, Math.min(100, 100 - (coords.accuracy || 100)));
+  const fill = document.getElementById('acc-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = coords.accuracy <= 20 ? '#4ade80' : coords.accuracy <= 60 ? '#facc15' : '#f87171';
+
+  // Throttle uploads
+  const now = Date.now();
+  if (now - lastSent < INTERVAL_MS) return;
+  lastSent = now;
+
+  const { error } = await db.from('driver_locations').upsert({
+    driver_id:   currentDriver.driver_id,
+    driver_name: currentDriver.full_name,
+    platform:    currentDriver.platform,
+    lat:         coords.latitude,
+    lng:         coords.longitude,
+    accuracy:    coords.accuracy,
+    speed:       coords.speed,
+    heading:     coords.heading,
+    is_online:   true,
+    updated_at:  new Date().toISOString(),
+  }, { onConflict: 'driver_id' });
+
+  if (error) {
+    addLog('Upload failed: ' + error.message, 'err');
+  } else {
+    updateCount++;
+    addLog(`Sent #${updateCount} — ${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`, 'ok');
+  }
+}
+
+function onGpsError(err) {
+  const msgs = { 1: 'Location permission denied.', 2: 'GPS unavailable.', 3: 'GPS timeout.' };
+  addLog(msgs[err.code] || 'GPS error.', 'err');
+  document.getElementById('track-badge').className = 'badge inactive';
+  document.getElementById('track-status').textContent = 'GPS Error';
+}
+
+async function markOffline() {
+  if (!currentDriver) return;
+  await db.from('driver_locations')
+    .update({ is_online: false, updated_at: new Date().toISOString() })
+    .eq('driver_id', currentDriver.driver_id);
+}
+
+// ── Log ───────────────────────────────────────────────────────────────────────
+function addLog(msg, type = 'info') {
+  const el   = document.getElementById('log');
+  const div  = document.createElement('div');
+  div.className = `log-${type}`;
+  div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.prepend(div);
+  while (el.children.length > 20) el.removeChild(el.lastChild);
+}
+
+// ── Boot: restore session ─────────────────────────────────────────────────────
+window.addEventListener('load', async () => {
+  const saved = localStorage.getItem('rk_driver_session');
+  if (!saved) return showAuthScreen();
+
+  currentDriver = JSON.parse(saved);
+
+  // Re-validate status from DB (in case admin changed it)
+  const { data } = await db
+    .from('drivers')
+    .select('status, full_name, platform')
+    .eq('driver_id', currentDriver.driver_id)
+    .single();
+
+  if (data) {
+    currentDriver.status    = data.status;
+    currentDriver.full_name = data.full_name;
+    currentDriver.platform  = data.platform;
+    localStorage.setItem('rk_driver_session', JSON.stringify(currentDriver));
+  }
+
+  if (currentDriver.status === 'approved')  return showTrackingScreen();
+  if (currentDriver.status === 'pending')   return showPendingScreen();
+  showAuthScreen();
+});
+
+// ── Service Worker ────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>

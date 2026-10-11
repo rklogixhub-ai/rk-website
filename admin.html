@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RK Logix — Admin Panel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #000; color: #fff; min-height: 100vh; }
+
+    header {
+      background: #000; border-bottom: 3px solid #fff;
+      padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 1rem; font-weight: 800; letter-spacing: 3px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    #admin-name { font-size: 0.82rem; color: #888; }
+    #logout-btn { font-size: 0.82rem; color: #fff; cursor: pointer; background: none; border: 1px solid #333; padding: 6px 14px; border-radius: 8px; }
+
+    /* ── Login ── */
+    #screen-login {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 60px); padding: 24px;
+    }
+    .login-card {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 32px; width: 100%; max-width: 380px;
+    }
+    .login-card h2 { font-size: 1.1rem; margin-bottom: 24px; }
+
+    label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 5px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.06em; }
+    input { width: 100%; padding: 12px 14px; background: #1c1c1c; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; }
+    input:focus { border-color: #fff; }
+
+    .btn { padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-primary:hover { background: #e5e5e5; }
+    .btn-approve  { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); padding: 6px 14px; font-size: 0.8rem; }
+    .btn-suspend  { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 6px 14px; font-size: 0.8rem; }
+    .btn-restore  { background: rgba(96,165,250,0.1);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.3);  padding: 6px 14px; font-size: 0.8rem; }
+
+    /* ── Dashboard ── */
+    #screen-dashboard { display: none; padding: 24px; }
+
+    .stats { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-box {
+      background: #111; border: 1px solid #222; border-radius: 12px;
+      padding: 16px 20px; min-width: 120px;
+    }
+    .stat-box .num { font-size: 1.8rem; font-weight: 800; }
+    .stat-box .lbl { font-size: 0.75rem; color: #666; margin-top: 2px; }
+    .stat-box.green .num { color: #4ade80; }
+    .stat-box.yellow .num { color: #facc15; }
+    .stat-box.red .num { color: #f87171; }
+
+    /* ── Filter tabs ── */
+    .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 999px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; border: 1px solid #333; color: #888;
+      background: none; transition: all 0.2s;
+    }
+    .filter-tab.active { background: #fff; color: #000; border-color: #fff; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 10px 14px; color: #555; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #1a1a1a; }
+    td { padding: 12px 14px; border-bottom: 1px solid #111; vertical-align: middle; }
+    tr:hover td { background: #0d0d0d; }
+
+    .status-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    }
+    .status-pending  { background: rgba(250,204,21,0.1);  color: #facc15; border: 1px solid rgba(250,204,21,0.3); }
+    .status-approved { background: rgba(74,222,128,0.1);  color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+    .status-suspended{ background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+    .online-dot  { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4ade80; margin-right: 6px; }
+    .offline-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #333; margin-right: 6px; }
+
+    .actions { display: flex; gap: 6px; }
+
+    .alert { padding: 10px 16px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 16px; }
+    .alert.err { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+    #no-drivers { text-align: center; padding: 40px; color: #444; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>RK LOGIX — ADMIN</h1>
+  <div class="header-right">
+    <span id="admin-name"></span>
+    <button id="logout-btn" onclick="adminLogout()" style="display:none;">Logout</button>
+  </div>
+</header>
+
+<!-- ── Login ── -->
+<div id="screen-login">
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <div class="alert err" id="login-err" style="display:none;"></div>
+    <label>Admin Password</label>
+    <input type="password" id="admin-pass" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')adminLogin()" />
+    <button class="btn btn-primary" onclick="adminLogin()" style="width:100%;margin-top:20px;">Sign In</button>
+  </div>
+</div>
+
+<!-- ── Dashboard ── -->
+<div id="screen-dashboard">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box yellow"><div class="num" id="stat-pending">0</div><div class="lbl">Pending</div></div>
+    <div class="stat-box green"><div class="num" id="stat-approved">0</div><div class="lbl">Approved</div></div>
+    <div class="stat-box red"><div class="num" id="stat-suspended">0</div><div class="lbl">Suspended</div></div>
+    <div class="stat-box"><div class="num" id="stat-online">0</div><div class="lbl">Online Now</div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterDrivers('all')">All</button>
+    <button class="filter-tab" onclick="filterDrivers('pending')">Pending</button>
+    <button class="filter-tab" onclick="filterDrivers('approved')">Approved</button>
+    <button class="filter-tab" onclick="filterDrivers('suspended')">Suspended</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Driver ID</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Platform</th>
+          <th>Status</th>
+          <th>Online</th>
+          <th>Registered</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="drivers-tbody">
+        <tr><td colspan="8" id="no-drivers">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+
+// !! Change this to a strong password !!
+const ADMIN_PASSWORD = 'rklogix@admin2024';
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allDrivers   = [];
+let onlineIds    = new Set();
+let currentFilter = 'all';
+
+// ── Admin login (client-side password — simple protection) ───────────────────
+function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (pass !== ADMIN_PASSWORD) {
+    const el = document.getElementById('login-err');
+    el.textContent = 'Incorrect password.';
+    el.style.display = 'block';
+    return;
+  }
+  sessionStorage.setItem('rk_admin', '1');
+  showDashboard();
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('rk_admin');
+  document.getElementById('screen-login').style.display    = 'flex';
+  document.getElementById('screen-dashboard').style.display = 'none';
+  document.getElementById('logout-btn').style.display = 'none';
+}
+
+function showDashboard() {
+  document.getElementById('screen-login').style.display    = 'none';
+  document.getElementById('screen-dashboard').style.display = 'block';
+  document.getElementById('logout-btn').style.display = 'block';
+  document.getElementById('admin-name').textContent = 'Admin';
+  loadDrivers();
+  loadOnlineDrivers();
+  // Refresh every 15s
+  setInterval(loadDrivers, 15000);
+  setInterval(loadOnlineDrivers, 10000);
+}
+
+// ── Load drivers ──────────────────────────────────────────────────────────────
+async function loadDrivers() {
+  const { data, error } = await db
+    .from('drivers')
+    .select('driver_id, full_name, phone, platform, status, created_at, approved_at')
+    .order('created_at', { ascending: false });
+
+  if (error) return;
+  allDrivers = data || [];
+  updateStats();
+  renderTable();
+}
+
+async function loadOnlineDrivers() {
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data } = await db
+    .from('driver_locations')
+    .select('driver_id')
+    .eq('is_online', true)
+    .gte('updated_at', fiveMinAgo);
+
+  onlineIds = new Set((data || []).map(d => d.driver_id));
+  document.getElementById('stat-online').textContent = onlineIds.size;
+  renderTable();
+}
+
+function updateStats() {
+  document.getElementById('stat-pending').textContent   = allDrivers.filter(d => d.status === 'pending').length;
+  document.getElementById('stat-approved').textContent  = allDrivers.filter(d => d.status === 'approved').length;
+  document.getElementById('stat-suspended').textContent = allDrivers.filter(d => d.status === 'suspended').length;
+}
+
+function filterDrivers(status) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('drivers-tbody');
+  const list  = currentFilter === 'all'
+    ? allDrivers
+    : allDrivers.filter(d => d.status === currentFilter);
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" id="no-drivers" style="text-align:center;padding:40px;color:#444;">No drivers found</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(d => {
+    const isOnline = onlineIds.has(d.driver_id);
+    const date     = new Date(d.created_at).toLocaleDateString();
+    const platform = d.platform === 'g3link' ? 'G3 Link' : 'RK Logix';
+
+    let actions = '';
+    if (d.status === 'pending') {
+      actions = `<button class="btn btn-approve" onclick="updateStatus('${d.driver_id}','approved')">Approve</button>
+                 <button class="btn btn-suspend" onclick="updateStatus('${d.driver_id}','suspended')">Reject</button>`;
+    } else if (d.status === 'approved') {
+      actions = `<button class="btn btn-suspend" onclick="updateStatus('${d.driver_id}','suspended')">Suspend</button>`;
+    } else if (d.status === 'suspended') {
+      actions = `<button class="btn btn-restore" onclick="updateStatus('${d.driver_id}','approved')">Restore</button>`;
+    }
+
+    return `<tr>
+      <td><strong>${d.driver_id}</strong></td>
+      <td>${d.full_name}</td>
+      <td>${d.phone}</td>
+      <td>${platform}</td>
+      <td><span class="status-badge status-${d.status}">${d.status}</span></td>
+      <td>${isOnline
+        ? '<span class="online-dot"></span>Online'
+        : '<span class="offline-dot"></span>Offline'}</td>
+      <td>${date}</td>
+      <td><div class="actions">${actions}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Approve / Suspend ─────────────────────────────────────────────────────────
+async function updateStatus(driverId, status) {
+  const update = { status };
+  if (status === 'approved') update.approved_at = new Date().toISOString();
+
+  const { error } = await db
+    .from('drivers')
+    .update(update)
+    .eq('driver_id', driverId);
+
+  if (!error) loadDrivers();
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem('rk_admin')) showDashboard();
+});
+</script>
+</body>
+</html>
