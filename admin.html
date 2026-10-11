@@ -135,6 +135,7 @@
         <tr>
           <th>Driver ID</th>
           <th>Name</th>
+          <th>Email</th>
           <th>Phone</th>
           <th>Platform</th>
           <th>Status</th>
@@ -201,7 +202,7 @@ function showDashboard() {
 async function loadDrivers() {
   const { data, error } = await db
     .from('drivers')
-    .select('driver_id, full_name, phone, platform, status, created_at, approved_at')
+    .select('driver_id, full_name, email, phone, platform, status, created_at, approved_at')
     .order('created_at', { ascending: false });
 
   if (error) return;
@@ -265,6 +266,7 @@ function renderTable() {
     return `<tr>
       <td><strong>${d.driver_id}</strong></td>
       <td>${d.full_name}</td>
+      <td>${d.email || '—'}</td>
       <td>${d.phone}</td>
       <td>${platform}</td>
       <td><span class="status-badge status-${d.status}">${d.status}</span></td>
