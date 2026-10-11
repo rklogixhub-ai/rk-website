@@ -1411,11 +1411,6 @@ const LM_SB_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
 const LM_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
 const lmDb      = supabase.createClient(LM_SB_URL, LM_SB_KEY);
 
-// Admin credentials (email + password)
-const ADMIN_EMAIL    = 'admin@rklogixhub.com';
-const ADMIN_PASSWORD_HASH = null; // we compare plain password below
-const ADMIN_PLAIN_PASS = 'rklogix@admin2024';
-
 function openLoginModal() {
   document.getElementById('loginModal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -1452,31 +1447,44 @@ async function unifiedLogin() {
   btn.textContent = 'Signing in…';
   errEl.style.display = 'none';
 
-  // ── Check if admin ────────────────────────────────────────────────────────
-  if (email === ADMIN_EMAIL) {
-    if (pass === ADMIN_PLAIN_PASS) {
+  const hash = await lmHashPassword(pass);
+
+  // ── Check admins table first ──────────────────────────────────────────────
+  const { data: admin } = await lmDb
+    .from('admins')
+    .select('id, email, full_name, password_hash, is_active')
+    .eq('email', email)
+    .single();
+
+  if (admin) {
+    if (!admin.is_active) {
       btn.disabled = false;
       btn.textContent = 'Sign In';
-      closeLoginModal();
-      sessionStorage.setItem('rk_admin_ok', '1');
-      // Open admin panel
-      document.getElementById('adminModal').style.display = 'block';
-      document.body.style.overflow = 'hidden';
-      admShowDash();
+      errEl.textContent = 'This admin account is inactive. Contact support.';
+      errEl.style.display = 'block';
       return;
-    } else {
+    }
+    if (admin.password_hash !== hash) {
       btn.disabled = false;
       btn.textContent = 'Sign In';
       errEl.textContent = 'Incorrect password.';
       errEl.style.display = 'block';
       return;
     }
+    // Admin login success
+    await lmDb.from('admins').update({ last_login: new Date().toISOString() }).eq('id', admin.id);
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+    closeLoginModal();
+    sessionStorage.setItem('rk_admin_ok', '1');
+    document.getElementById('adminModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    admShowDash();
+    return;
   }
 
-  // ── Check if driver ───────────────────────────────────────────────────────
-  const hash = await lmHashPassword(pass);
-
-  const { data, error } = await lmDb
+  // ── Check drivers table ───────────────────────────────────────────────────
+  const { data: driver, error } = await lmDb
     .from('drivers')
     .select('driver_id, full_name, email, platform, status, password_hash')
     .eq('email', email)
@@ -1485,36 +1493,34 @@ async function unifiedLogin() {
   btn.disabled = false;
   btn.textContent = 'Sign In';
 
-  if (error || !data) {
+  if (error || !driver) {
     errEl.textContent = 'No account found with this email.';
     errEl.style.display = 'block';
     return;
   }
 
-  if (data.password_hash !== hash) {
+  if (driver.password_hash !== hash) {
     errEl.textContent = 'Incorrect password.';
     errEl.style.display = 'block';
     return;
   }
 
-  // Driver found — redirect to driver tracker
-  closeLoginModal();
-
-  if (data.status === 'suspended') {
-    alert('Your account has been suspended. Please contact admin.');
+  if (driver.status === 'suspended') {
+    errEl.textContent = 'Your account has been suspended. Contact admin.';
+    errEl.style.display = 'block';
     return;
   }
 
-  // Save session and redirect to driver tracker
-  localStorage.setItem('rk_driver_session', JSON.stringify(data));
+  // Driver login success — save session and redirect to tracker
+  closeLoginModal();
+  localStorage.setItem('rk_driver_session', JSON.stringify(driver));
   window.location.href = '/driver-tracker/';
 }
 
 // ── Admin Panel ───────────────────────────────────────────────────────────────
-const ADM_PASSWORD  = 'rklogix@admin2024';
-const ADM_SB_URL    = 'https://gtwpndodljngyiyfpzcy.supabase.co';
-const ADM_SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
-const admDb         = supabase.createClient(ADM_SB_URL, ADM_SB_KEY);
+const ADM_SB_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+const ADM_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+const admDb      = supabase.createClient(ADM_SB_URL, ADM_SB_KEY);
 
 let admDrivers      = [];
 let admOnlineIds    = new Set();
@@ -1535,18 +1541,6 @@ function closeAdminModal() {
   document.getElementById('adminModal').style.display = 'none';
   document.body.style.overflow = '';
   if (admRefreshTimer) { clearInterval(admRefreshTimer); admRefreshTimer = null; }
-}
-
-function adminLogin() {
-  const pass = document.getElementById('adm-pass').value;
-  if (pass !== ADM_PASSWORD) {
-    const el = document.getElementById('adm-login-err');
-    el.textContent = 'Incorrect password.';
-    el.style.display = 'block';
-    return;
-  }
-  sessionStorage.setItem('rk_admin_ok', '1');
-  admShowDash();
 }
 
 function adminLogout() {
