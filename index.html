@@ -78,7 +78,7 @@
        <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a>
        <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a>
        <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button>
-       <button onclick="openAdminModal()" class="bg-transparent border border-gray-600 hover:border-white text-gray-400 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">ADMIN</button>
+       <button onclick="openLoginModal()" class="bg-transparent border border-gray-500 hover:border-white text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">LOGIN</button>
       </div>
       <button onclick="toggleMobileMenu()" class="md:hidden text-white hover:text-gray-300 focus:outline-none">
        <svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -86,7 +86,7 @@
      </div>
    </div><!-- Mobile menu -->
    <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
-     <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="openAdminModal()" class="w-full text-left bg-transparent border border-gray-600 text-gray-400 px-3 py-2 rounded-md text-base font-medium mt-1">ADMIN</button></div>
+     <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="openLoginModal()" class="w-full text-left bg-transparent border border-gray-600 text-gray-300 px-3 py-2 rounded-md text-base font-medium mt-1">LOGIN</button></div>
     </div>
    </div>
   </nav><!-- Home Section -->
@@ -1271,6 +1271,43 @@
     </script>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     UNIFIED LOGIN MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="loginModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;display:none;align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid #222;border-radius:16px;padding:32px;width:100%;max-width:380px;margin:24px;position:relative;">
+
+    <!-- Close -->
+    <button onclick="closeLoginModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.3rem;cursor:pointer;">✕</button>
+
+    <h2 style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:6px;">Login</h2>
+    <p style="font-size:0.8rem;color:#666;margin-bottom:24px;">Sign in as a driver or admin</p>
+
+    <div id="login-modal-err" style="display:none;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
+
+    <label style="display:block;font-size:0.72rem;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Email</label>
+    <input type="email" id="lm-email" placeholder="your@email.com"
+      style="width:100%;padding:12px 14px;background:#1c1c1c;border:1px solid #333;border-radius:10px;color:#fff;font-size:0.95rem;outline:none;margin-bottom:14px;"
+      onkeydown="if(event.key==='Enter')document.getElementById('lm-pass').focus()"
+    />
+
+    <label style="display:block;font-size:0.72rem;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Password</label>
+    <input type="password" id="lm-pass" placeholder="Your password"
+      style="width:100%;padding:12px 14px;background:#1c1c1c;border:1px solid #333;border-radius:10px;color:#fff;font-size:0.95rem;outline:none;"
+      onkeydown="if(event.key==='Enter')unifiedLogin()"
+    />
+
+    <button onclick="unifiedLogin()" id="lm-btn"
+      style="width:100%;margin-top:20px;padding:13px;background:#fff;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">
+      Sign In
+    </button>
+
+    <p style="text-align:center;color:#555;font-size:0.78rem;margin-top:16px;">
+      Don't have an account? <span onclick="closeLoginModal();showRegister();" style="color:#fff;cursor:pointer;text-decoration:underline;">Register here</span>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
      ADMIN MODAL
 ════════════════════════════════════════════════════════════════ -->
 <div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;">
@@ -1369,6 +1406,110 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+// ── Unified Login Modal ───────────────────────────────────────────────────────
+const LM_SB_URL = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+const LM_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+const lmDb      = supabase.createClient(LM_SB_URL, LM_SB_KEY);
+
+// Admin credentials (email + password)
+const ADMIN_EMAIL    = 'admin@rklogixhub.com';
+const ADMIN_PASSWORD_HASH = null; // we compare plain password below
+const ADMIN_PLAIN_PASS = 'rklogix@admin2024';
+
+function openLoginModal() {
+  document.getElementById('loginModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('lm-email').focus(), 100);
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal').style.display = 'none';
+  document.body.style.overflow = '';
+  document.getElementById('login-modal-err').style.display = 'none';
+  document.getElementById('lm-email').value = '';
+  document.getElementById('lm-pass').value  = '';
+}
+
+async function lmHashPassword(password) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(password));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function unifiedLogin() {
+  const email = document.getElementById('lm-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('lm-pass').value;
+  const errEl = document.getElementById('login-modal-err');
+  const btn   = document.getElementById('lm-btn');
+
+  if (!email || !pass) {
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  errEl.style.display = 'none';
+
+  // ── Check if admin ────────────────────────────────────────────────────────
+  if (email === ADMIN_EMAIL) {
+    if (pass === ADMIN_PLAIN_PASS) {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      closeLoginModal();
+      sessionStorage.setItem('rk_admin_ok', '1');
+      // Open admin panel
+      document.getElementById('adminModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      admShowDash();
+      return;
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      errEl.textContent = 'Incorrect password.';
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  // ── Check if driver ───────────────────────────────────────────────────────
+  const hash = await lmHashPassword(pass);
+
+  const { data, error } = await lmDb
+    .from('drivers')
+    .select('driver_id, full_name, email, platform, status, password_hash')
+    .eq('email', email)
+    .single();
+
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+
+  if (error || !data) {
+    errEl.textContent = 'No account found with this email.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (data.password_hash !== hash) {
+    errEl.textContent = 'Incorrect password.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Driver found — redirect to driver tracker
+  closeLoginModal();
+
+  if (data.status === 'suspended') {
+    alert('Your account has been suspended. Please contact admin.');
+    return;
+  }
+
+  // Save session and redirect to driver tracker
+  localStorage.setItem('rk_driver_session', JSON.stringify(data));
+  window.location.href = '/driver-tracker/';
+}
+
 // ── Admin Panel ───────────────────────────────────────────────────────────────
 const ADM_PASSWORD  = 'rklogix@admin2024';
 const ADM_SB_URL    = 'https://gtwpndodljngyiyfpzcy.supabase.co';
@@ -1384,6 +1525,10 @@ function openAdminModal() {
   document.getElementById('adminModal').style.display = 'block';
   document.body.style.overflow = 'hidden';
   if (sessionStorage.getItem('rk_admin_ok')) admShowDash();
+  else {
+    document.getElementById('adm-screen-login').style.display = 'flex';
+    document.getElementById('adm-screen-dash').style.display  = 'none';
+  }
 }
 
 function closeAdminModal() {
