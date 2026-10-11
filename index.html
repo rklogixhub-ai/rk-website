@@ -78,6 +78,7 @@
        <a href="#about" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">ABOUT</a>
        <a href="#contact" class="nav-link text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium transition-colors">CONTACT</a>
        <button onclick="showRegister()" class="bg-white hover:bg-gray-200 text-black px-4 py-2 rounded-md text-sm font-medium transition-colors">REGISTER</button>
+       <button onclick="openAdminModal()" class="bg-transparent border border-gray-600 hover:border-white text-gray-400 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">ADMIN</button>
       </div>
       <button onclick="toggleMobileMenu()" class="md:hidden text-white hover:text-gray-300 focus:outline-none">
        <svg class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -85,7 +86,7 @@
      </div>
    </div><!-- Mobile menu -->
    <div id="mobile-menu" class="md:hidden hidden bg-black border-t border-white">
-    <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button></div>
+     <div class="px-2 pt-2 pb-3 space-y-1"><a href="#home" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">HOME</a> <a href="#carrier" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CARRIER</a> <a href="#driver" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">DRIVER</a> <a href="#about" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">ABOUT</a> <a href="#contact" class="nav-link block text-white hover:text-gray-300 px-3 py-2 rounded-md text-base font-medium">CONTACT</a> <button onclick="showRegister()" class="w-full text-left bg-white hover:bg-gray-200 text-black px-3 py-2 rounded-md text-base font-medium">REGISTER</button> <button onclick="openAdminModal()" class="w-full text-left bg-transparent border border-gray-600 text-gray-400 px-3 py-2 rounded-md text-base font-medium mt-1">ADMIN</button></div>
     </div>
    </div>
   </nav><!-- Home Section -->
@@ -1268,5 +1269,268 @@
         window.addEventListener('scroll', handleScrollAnimations);
         window.addEventListener('load', handleScrollAnimations);
     </script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ADMIN MODAL
+════════════════════════════════════════════════════════════════ -->
+<div id="adminModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;overflow-y:auto;">
+  <div style="min-height:100vh;display:flex;flex-direction:column;">
+
+    <!-- Modal Header -->
+    <div style="background:#000;border-bottom:3px solid #fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
+      <span style="font-size:1rem;font-weight:800;letter-spacing:3px;color:#fff;">RK LOGIX — ADMIN PANEL</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="adm-user" style="font-size:0.8rem;color:#888;"></span>
+        <button onclick="adminLogout()" id="adm-logout" style="display:none;font-size:0.8rem;color:#fff;background:none;border:1px solid #333;padding:6px 14px;border-radius:8px;cursor:pointer;">Logout</button>
+        <button onclick="closeAdminModal()" style="color:#666;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="adm-screen-login" style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div style="background:#111;border:1px solid #222;border-radius:16px;padding:32px;width:100%;max-width:360px;">
+        <h2 style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:24px;">Admin Login</h2>
+        <div id="adm-login-err" style="display:none;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px;"></div>
+        <label style="display:block;font-size:0.72rem;color:#888;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.06em;">Password</label>
+        <input type="password" id="adm-pass" placeholder="Admin password"
+          style="width:100%;padding:12px 14px;background:#1c1c1c;border:1px solid #333;border-radius:10px;color:#fff;font-size:0.95rem;outline:none;"
+          onkeydown="if(event.key==='Enter')adminLogin()"
+        />
+        <button onclick="adminLogin()"
+          style="width:100%;margin-top:18px;padding:13px;background:#fff;color:#000;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;">
+          Sign In
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="adm-screen-dash" style="display:none;padding:20px 24px;flex:1;">
+
+      <!-- Stats -->
+      <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:14px 20px;min-width:110px;">
+          <div id="adm-stat-pending" style="font-size:1.8rem;font-weight:800;color:#facc15;">0</div>
+          <div style="font-size:0.72rem;color:#666;margin-top:2px;">Pending</div>
+        </div>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:14px 20px;min-width:110px;">
+          <div id="adm-stat-approved" style="font-size:1.8rem;font-weight:800;color:#4ade80;">0</div>
+          <div style="font-size:0.72rem;color:#666;margin-top:2px;">Approved</div>
+        </div>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:14px 20px;min-width:110px;">
+          <div id="adm-stat-suspended" style="font-size:1.8rem;font-weight:800;color:#f87171;">0</div>
+          <div style="font-size:0.72rem;color:#666;margin-top:2px;">Suspended</div>
+        </div>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:14px 20px;min-width:110px;">
+          <div id="adm-stat-online" style="font-size:1.8rem;font-weight:800;color:#fff;">0</div>
+          <div style="font-size:0.72rem;color:#666;margin-top:2px;">Online Now</div>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="adm-filter active" data-filter="all"       onclick="admFilter(this,'all')">All</button>
+        <button class="adm-filter"        data-filter="pending"   onclick="admFilter(this,'pending')">Pending</button>
+        <button class="adm-filter"        data-filter="approved"  onclick="admFilter(this,'approved')">Approved</button>
+        <button class="adm-filter"        data-filter="suspended" onclick="admFilter(this,'suspended')">Suspended</button>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.83rem;">
+          <thead>
+            <tr style="border-bottom:1px solid #222;">
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Driver ID</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Name</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Email</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Phone</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Status</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Online</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Registered</th>
+              <th style="text-align:left;padding:10px 12px;color:#555;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adm-tbody">
+            <tr><td colspan="8" style="padding:30px;text-align:center;color:#444;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.adm-filter {
+  padding:7px 16px;border-radius:999px;font-size:0.82rem;font-weight:600;
+  cursor:pointer;border:1px solid #333;color:#888;background:none;transition:all 0.2s;
+}
+.adm-filter.active { background:#fff;color:#000;border-color:#fff; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ── Admin Panel ───────────────────────────────────────────────────────────────
+const ADM_PASSWORD  = 'rklogix@admin2024';
+const ADM_SB_URL    = 'https://gtwpndodljngyiyfpzcy.supabase.co';
+const ADM_SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0d3BuZG9kbGpuZ3lpeWZwemN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTY0OTUsImV4cCI6MjA4MTYzMjQ5NX0.7LAXXZOdwV_PxKrvM5o84h-9luBA1Ho_80VEtHCNo4E';
+const admDb         = supabase.createClient(ADM_SB_URL, ADM_SB_KEY);
+
+let admDrivers      = [];
+let admOnlineIds    = new Set();
+let admFilter_val   = 'all';
+let admRefreshTimer = null;
+
+function openAdminModal() {
+  document.getElementById('adminModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  if (sessionStorage.getItem('rk_admin_ok')) admShowDash();
+}
+
+function closeAdminModal() {
+  document.getElementById('adminModal').style.display = 'none';
+  document.body.style.overflow = '';
+  if (admRefreshTimer) { clearInterval(admRefreshTimer); admRefreshTimer = null; }
+}
+
+function adminLogin() {
+  const pass = document.getElementById('adm-pass').value;
+  if (pass !== ADM_PASSWORD) {
+    const el = document.getElementById('adm-login-err');
+    el.textContent = 'Incorrect password.';
+    el.style.display = 'block';
+    return;
+  }
+  sessionStorage.setItem('rk_admin_ok', '1');
+  admShowDash();
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('rk_admin_ok');
+  if (admRefreshTimer) { clearInterval(admRefreshTimer); admRefreshTimer = null; }
+  document.getElementById('adm-screen-dash').style.display  = 'none';
+  document.getElementById('adm-screen-login').style.display = 'flex';
+  document.getElementById('adm-logout').style.display       = 'none';
+  document.getElementById('adm-user').textContent           = '';
+  document.getElementById('adm-pass').value                 = '';
+}
+
+function admShowDash() {
+  document.getElementById('adm-screen-login').style.display = 'none';
+  document.getElementById('adm-screen-dash').style.display  = 'block';
+  document.getElementById('adm-logout').style.display       = 'block';
+  document.getElementById('adm-user').textContent           = 'Admin';
+  admLoadDrivers();
+  admLoadOnline();
+  admRefreshTimer = setInterval(() => { admLoadDrivers(); admLoadOnline(); }, 15000);
+}
+
+async function admLoadDrivers() {
+  const { data } = await admDb
+    .from('drivers')
+    .select('driver_id,full_name,email,phone,platform,status,created_at')
+    .order('created_at', { ascending: false });
+  admDrivers = data || [];
+  admUpdateStats();
+  admRenderTable();
+}
+
+async function admLoadOnline() {
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { data } = await admDb
+    .from('driver_locations')
+    .select('driver_id')
+    .eq('is_online', true)
+    .gte('updated_at', fiveMinAgo);
+  admOnlineIds = new Set((data || []).map(d => d.driver_id));
+  document.getElementById('adm-stat-online').textContent = admOnlineIds.size;
+  admRenderTable();
+}
+
+function admUpdateStats() {
+  document.getElementById('adm-stat-pending').textContent   = admDrivers.filter(d => d.status === 'pending').length;
+  document.getElementById('adm-stat-approved').textContent  = admDrivers.filter(d => d.status === 'approved').length;
+  document.getElementById('adm-stat-suspended').textContent = admDrivers.filter(d => d.status === 'suspended').length;
+}
+
+function admFilter(btn, val) {
+  admFilter_val = val;
+  document.querySelectorAll('.adm-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  admRenderTable();
+}
+
+function admRenderTable() {
+  const tbody = document.getElementById('adm-tbody');
+  const list  = admFilter_val === 'all' ? admDrivers : admDrivers.filter(d => d.status === admFilter_val);
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="padding:30px;text-align:center;color:#444;">No drivers found</td></tr>`;
+    return;
+  }
+
+  const statusColors = {
+    pending:   'background:rgba(250,204,21,0.1);color:#facc15;border:1px solid rgba(250,204,21,0.3)',
+    approved:  'background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.3)',
+    suspended: 'background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3)',
+  };
+
+  tbody.innerHTML = list.map(d => {
+    const isOnline = admOnlineIds.has(d.driver_id);
+    const date     = new Date(d.created_at).toLocaleDateString();
+    const platform = d.platform === 'g3link' ? 'G3 Link' : 'RK Logix';
+    const sc       = statusColors[d.status] || '';
+
+    let actions = '';
+    if (d.status === 'pending') {
+      actions = `
+        <button onclick="admUpdateStatus('${d.driver_id}','approved')"
+          style="padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);margin-right:6px;">
+          ✓ Approve
+        </button>
+        <button onclick="admUpdateStatus('${d.driver_id}','suspended')"
+          style="padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);">
+          ✕ Reject
+        </button>`;
+    } else if (d.status === 'approved') {
+      actions = `
+        <button onclick="admUpdateStatus('${d.driver_id}','suspended')"
+          style="padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.3);">
+          Suspend
+        </button>`;
+    } else if (d.status === 'suspended') {
+      actions = `
+        <button onclick="admUpdateStatus('${d.driver_id}','approved')"
+          style="padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);">
+          Restore
+        </button>`;
+    }
+
+    return `<tr style="border-bottom:1px solid #111;">
+      <td style="padding:11px 12px;color:#fff;font-weight:700;">${d.driver_id}</td>
+      <td style="padding:11px 12px;color:#e5e5e5;">${d.full_name}</td>
+      <td style="padding:11px 12px;color:#aaa;">${d.email || '—'}</td>
+      <td style="padding:11px 12px;color:#aaa;">${d.phone}</td>
+      <td style="padding:11px 12px;">
+        <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;${sc}">
+          ${d.status}
+        </span>
+      </td>
+      <td style="padding:11px 12px;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${isOnline ? '#4ade80' : '#333'};margin-right:6px;"></span>
+        <span style="color:${isOnline ? '#4ade80' : '#555'};font-size:0.82rem;">${isOnline ? 'Online' : 'Offline'}</span>
+      </td>
+      <td style="padding:11px 12px;color:#666;">${date}</td>
+      <td style="padding:11px 12px;">${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function admUpdateStatus(driverId, status) {
+  const update = { status };
+  if (status === 'approved') update.approved_at = new Date().toISOString();
+  await admDb.from('drivers').update(update).eq('driver_id', driverId);
+  admLoadDrivers();
+}
+</script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9eb407d7d154ebba',t:'MTc3NjAxNTc3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
